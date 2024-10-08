@@ -13,3 +13,5 @@ pip install Kivy
 ```
 
 ## TODO
+
+- 音頻要做剪接
