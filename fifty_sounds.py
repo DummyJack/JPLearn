@@ -16,13 +16,29 @@ class FiftySoundsGrid(ScrollView):
         super().__init__(**kwargs)
         self.size_hint = (1, 1)
 
-        self.layout = GridLayout(cols=5, spacing=dp(5), size_hint_y=None, size_hint_x=None)
-        self.layout.bind(minimum_height=self.layout.setter('height'))
+        self.main_layout = BoxLayout(orientation='vertical', spacing=dp(5), size_hint_y=None)
+        self.main_layout.bind(minimum_height=self.main_layout.setter('height'))
 
         sounds = "あa|いi|うu|えe|おo|かka|きki|くku|けke|こko|さsa|しshi|すsu|せse|そso|たta|ちchi|つtsu|てte|とto|なna|にni|ぬnu|ねne|のno|はha|ひhi|ふfu|へhe|ほho|まma|みmi|むmu|めme|もmo|やya|ゆyu|よyo|らra|りri|るru|れre|ろro|わwa|をo|んn"
-        sounds = sounds.split("|")
+        self.sounds = sounds.split("|")
+        self.button_size = dp(70)
+        self.spacing = dp(5)
 
-        for sound in sounds:
+        self.update_layout()
+
+        self.add_widget(self.main_layout)
+
+    def update_layout(self):
+        self.main_layout.clear_widgets()
+        width = self.width if self.width else Window.width
+        max_buttons_per_row = max(1, int((width - self.spacing) / (self.button_size + self.spacing)))
+        
+        current_row = None
+        for i, sound in enumerate(self.sounds):
+            if i % max_buttons_per_row == 0:
+                current_row = GridLayout(cols=max_buttons_per_row, spacing=self.spacing, size_hint_y=None, height=self.button_size)
+                self.main_layout.add_widget(current_row)
+
             japanese, romaji = sound[0], sound[1:]
             btn = Button(
                 text=f'[size=30]{japanese}[/size]\n[size=24]{romaji}[/size]',
@@ -30,33 +46,32 @@ class FiftySoundsGrid(ScrollView):
                 font_name='ChineseFont',
                 background_color=(0.5, 0.7, 1, 1),
                 size_hint=(None, None),
-                size=(dp(70), dp(70)),
-                halign='center',  # 文字水平居中
-                valign='middle',  # 文字垂直居中
-                text_size=(dp(70), dp(70))  # 設置文字區域大小
+                size=(self.button_size, self.button_size),
+                halign='center',
+                valign='middle',
+                text_size=(self.button_size, self.button_size)
             )
             btn.bind(on_press=self.play_sound)
-            self.layout.add_widget(btn)
+            current_row.add_widget(btn)
 
-        # 添加空白按鈕以填充最後一行
-        remaining_buttons = 5 - (len(sounds) % 5)
-        if remaining_buttons < 5:
-            for _ in range(remaining_buttons):
-                empty_btn = Button(
-                    background_color=(0, 0, 0, 0),
-                    size_hint=(None, None),
-                    size=(dp(70), dp(70))
-                )
-                self.layout.add_widget(empty_btn)
-
-        # 使用 AnchorLayout 來置中 GridLayout
-        anchor_layout = AnchorLayout(anchor_x='center', anchor_y='center')
-        anchor_layout.add_widget(self.layout)
-        self.add_widget(anchor_layout)
+        # 填充最後一行
+        if current_row:
+            remaining_buttons = max_buttons_per_row - (len(self.sounds) % max_buttons_per_row)
+            if remaining_buttons < max_buttons_per_row:
+                for _ in range(remaining_buttons):
+                    empty_btn = Button(
+                        background_color=(0, 0, 0, 0),
+                        size_hint=(None, None),
+                        size=(self.button_size, self.button_size)
+                    )
+                    current_row.add_widget(empty_btn)
 
     def play_sound(self, instance):
         sound = instance.text.split()[0]  # 獲取日文字符
         print(f"播放音頻: {sound}")
+
+    def on_size(self, *args):
+        self.update_layout()
 
 class FiftySoundsPopup(Popup):
     def __init__(self, **kwargs):
@@ -78,9 +93,4 @@ class FiftySoundsPopup(Popup):
     def on_size(self, *args):
         # 當彈出窗口大小改變時，調整網格的列數和寬度
         if hasattr(self, 'grid'):
-            grid = self.grid
-            if isinstance(grid, FiftySoundsGrid):
-                width = self.width - dp(40)  # 減去padding
-                cols = max(3, int(width / (dp(70) + dp(5))))  # 最少3列，最多根據寬度決定
-                grid.layout.cols = cols
-                grid.layout.width = cols * (dp(70) + dp(5)) - dp(5)  # 設置GridLayout的寬度
+            self.grid.update_layout()
