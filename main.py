@@ -10,6 +10,7 @@ from kivy.core.text import LabelBase
 from fifty_sounds import FiftySoundsPopup
 from words_list import WordsListPopup
 from kivy.uix.floatlayout import FloatLayout
+from kivy.core.window import Window
 
 class MainView(FloatLayout):  # 改用 FloatLayout
     def __init__(self, **kwargs):
@@ -21,15 +22,15 @@ class MainView(FloatLayout):  # 改用 FloatLayout
         self.bind(size=self._update_rect, pos=self._update_rect)
 
         # 添加標題
-        title = Label(text='日文快樂學', font_size=40, size_hint_y=None, height=100,color=(0,0,0,1), pos_hint={'top': 1, 'center_x': 0.5}, font_name='ChineseFont')
+        title = Label(text='日文快樂學', font_size=60, size_hint_y=None, height=100,color=(0,0,0,1), pos_hint={'top': 1, 'center_x': 0.5}, font_name='ChineseFont')
         self.add_widget(title)
 
         # 創建按鈕
         self.btn_50on = Button(
             text='五十音',
-            font_size=32,
+            font_size=48,
             size_hint=(None, None),
-            size=(200, 100),
+            size=(300, 100),
             background_color=(0, 0, 1, 1),
             pos_hint={'center_x': 0.35, 'center_y': 0.5}, # 調整位置
             font_name='ChineseFont'
@@ -39,9 +40,9 @@ class MainView(FloatLayout):  # 改用 FloatLayout
 
         self.btn_words = Button(
             text='單字',
-            font_size=32,
+            font_size=48,
             size_hint=(None, None),
-            size=(200, 100),
+            size=(300, 100),
             background_color=(0, 1, 0, 1),
             pos_hint={'center_x': 0.65, 'center_y': 0.5},  # 調整位置
             font_name='ChineseFont'
@@ -52,7 +53,7 @@ class MainView(FloatLayout):  # 改用 FloatLayout
         # 添加製作人文字
         creator_label = Label(
             text='製作人：書賢',
-            font_size=16,
+            font_size=24,
             size_hint_y=None,
             height=30,
             pos_hint={'center_x': 0.5, 'y': 0.02},  # 將標籤放在底部中央
