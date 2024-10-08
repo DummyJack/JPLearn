@@ -18,29 +18,65 @@ class EditWordPopup(Popup):
         self.title = ""
         self.separator_height = 0
         self.size_hint = (None, None)
-        self.width = min(dp(500), Window.width * 0.7)
-        self.height = min(dp(300), Window.height * 0.4)
+        self.width = min(dp(600), Window.width * 0.7)
+        self.height = min(dp(400), Window.height * 0.5)
         
-        content = BoxLayout(orientation='vertical', spacing=dp(10))
+        content = BoxLayout(orientation='vertical', spacing=dp(20))
         
         title_bar = TitleBar("修改單字", self.dismiss)
         content.add_widget(title_bar)
         
-        input_layout = BoxLayout(orientation='vertical', spacing=dp(10), padding=dp(10))
-        self.word_input = TextInput(text=word, multiline=False, font_name='ChineseFont', font_size=dp(20), size_hint_y=None, height=dp(50))
-        input_layout.add_widget(self.word_input)
+        # 主要內容區域
+        main_content = BoxLayout(orientation='vertical', spacing=dp(20), padding=[dp(20), dp(20), dp(20), dp(20)])
         
-        btn = Button(text="確定", size_hint=(None, None), size=(dp(100), dp(40)), font_name='ChineseFont', font_size=dp(18))
-        btn.bind(on_press=self.edit_word)
-        input_layout.add_widget(btn)
+        self.word_input = TextInput(
+            text=word,
+            multiline=True,
+            font_name='ChineseFont', 
+            font_size=dp(24), 
+            size_hint=(1, 1),  # 填滿可用空間
+            padding=[dp(10), dp(10), dp(10), dp(10)],
+            background_color=(1, 1, 1, 1),
+            foreground_color=(0, 0, 0, 1),
+            cursor_color=(0, 0, 0, 1),
+        )
+        main_content.add_widget(self.word_input)
         
-        content.add_widget(input_layout)
+        content.add_widget(main_content)
+        
+        # 底部按鈕區域
+        button_layout = BoxLayout(orientation='horizontal', spacing=dp(20), size_hint_y=None, height=dp(70), padding=[dp(20), 0, dp(20), dp(20)])
+        
+        confirm_btn = Button(
+            text="確定", 
+            size_hint=(None, None),
+            size=(dp(120), dp(50)),  # 調整按鈕大小
+            font_name='ChineseFont', 
+            font_size=dp(18)
+        )
+        confirm_btn.bind(on_press=self.edit_word)
+        
+        cancel_btn = Button(
+            text="取消", 
+            size_hint=(None, None),
+            size=(dp(120), dp(50)),  # 調整按鈕大小
+            font_name='ChineseFont', 
+            font_size=dp(18)
+        )
+        cancel_btn.bind(on_press=self.dismiss)
+        
+        button_layout.add_widget(Widget())  # 添加一個彈性空間
+        button_layout.add_widget(confirm_btn)
+        button_layout.add_widget(cancel_btn)
+        button_layout.add_widget(Widget())  # 添加一個彈性空間
+        
+        content.add_widget(button_layout)
         
         self.content = content
         self.edit_callback = edit_callback
 
     def edit_word(self, instance):
-        new_word = self.word_input.text
+        new_word = self.word_input.text.strip()  # 移除首尾空白
         if new_word:
             self.edit_callback(new_word)
             self.dismiss()
