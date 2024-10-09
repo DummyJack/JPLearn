@@ -10,6 +10,13 @@ from kivy.uix.widget import Widget
 from kivy.metrics import dp
 from kivy.uix.anchorlayout import AnchorLayout
 import re
+from pymongo import MongoClient
+from bson import ObjectId
+
+# 建立 MongoDB 連接
+client = MongoClient('mongodb://localhost:27017/')
+db = client['japanese_words']
+words_collection = db['words']
 
 class JapaneseTextInput(TextInput):
     def insert_text(self, substring, from_undo=False):
@@ -19,7 +26,7 @@ class JapaneseTextInput(TextInput):
         return super().insert_text(s, from_undo=from_undo)
 
 class EditWordPopup(Popup):
-    def __init__(self, japanese, explanation, edit_callback, **kwargs):
+    def __init__(self, japanese, explanation, edit_callback, word_id, **kwargs):
         super().__init__(**kwargs)
         self.title = ""
         self.separator_height = 0
@@ -97,6 +104,7 @@ class EditWordPopup(Popup):
 
         self.content = layout
         self.edit_callback = edit_callback
+        self.word_id = word_id
 
     def on_japanese_input(self, instance, value):
         if not all(self.is_japanese_char(c) for c in value if c.strip()):
@@ -119,14 +127,13 @@ class EditWordPopup(Popup):
             self.error_label.text = "請只輸入日文字符"
             return
 
-        # 解釋可以為空
         explanation = explanation if explanation else ""
 
         self.edit_callback(japanese, explanation)
         self.dismiss()
 
 class WordItem(BoxLayout):
-    def __init__(self, word, explanation, delete_callback, edit_callback, **kwargs):
+    def __init__(self, word, explanation, delete_callback, edit_callback, word_id, **kwargs):
         super().__init__(**kwargs)
         self.orientation = 'horizontal'
         self.spacing = dp(10)
@@ -199,6 +206,7 @@ class WordItem(BoxLayout):
 
         self.delete_callback = delete_callback
         self.edit_callback = edit_callback
+        self.word_id = word_id
 
     def _update_label_height(self, instance, size):
         instance.height = max(size[1], dp(70))  # 確保最小高度為70dp
@@ -214,7 +222,7 @@ class WordItem(BoxLayout):
         self.delete_callback(self)
 
     def edit_word(self, instance):
-        popup = EditWordPopup(self.word, self.explanation, self.update_word)
+        popup = EditWordPopup(self.word, self.explanation, self.update_word, self.word_id)
         popup.open()
 
     def update_word(self, new_word, new_explanation):
@@ -230,17 +238,26 @@ class WordsList(ScrollView):
         self.layout = BoxLayout(orientation='vertical', spacing=dp(10), size_hint_y=None, padding=[0, dp(10), 0, 0])
         self.layout.bind(minimum_height=self.layout.setter('height'))
         self.add_widget(self.layout)
+        self.load_words_from_db()
 
-    def add_word(self, japanese, explanation):
-        word_item = WordItem(japanese, explanation, self.delete_word, self.edit_word)
+    def load_words_from_db(self):
+        self.layout.clear_widgets()
+        for word in words_collection.find():
+            self.add_word(word['japanese'], word['explanation'], word['_id'])
+
+    def add_word(self, japanese, explanation, word_id=None):
+        word_item = WordItem(japanese, explanation, self.delete_word, self.edit_word, word_id)
         self.layout.add_widget(word_item)
-        # 不需要額外的對齊設置，因為我們已經在 WordItem 中處理了對齊
 
     def delete_word(self, word_item):
+        words_collection.delete_one({'_id': word_item.word_id})
         self.layout.remove_widget(word_item)
 
     def edit_word(self, word_item, new_japanese, new_explanation):
-        pass
+        words_collection.update_one(
+            {'_id': word_item.word_id},
+            {'$set': {'japanese': new_japanese, 'explanation': new_explanation}}
+        )
 
 class AddWordPopup(Popup):
     def __init__(
@@ -342,10 +359,11 @@ class AddWordPopup(Popup):
             self.error_label.text = "請只輸入日文字符"
             return
 
-        # 解釋可以為空
         explanation = explanation if explanation else ""
 
-        self.add_word_callback(japanese, explanation)
+        # 插入新單字到資料庫
+        result = words_collection.insert_one({'japanese': japanese, 'explanation': explanation})
+        self.add_word_callback(japanese, explanation, result.inserted_id)
         self.dismiss()
 
 class WordsListPopup(Popup):
