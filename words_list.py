@@ -7,9 +7,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.popup import Popup
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.widget import Widget 
-from custom_widgets import TitleBar
 from kivy.metrics import dp
-from kivy.core.window import Window
 from kivy.uix.anchorlayout import AnchorLayout
 import re
 
