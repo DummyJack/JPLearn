@@ -4,7 +4,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.popup import Popup
 from kivy.core.audio import SoundLoader
-from custom_widgets import TitleBar
+from components.custom_widgets import TitleBar
 from kivy.core.window import Window
 from kivy.metrics import dp
 

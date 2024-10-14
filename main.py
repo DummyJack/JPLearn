@@ -6,8 +6,8 @@ from kivy.uix.label import Label
 from kivy.uix.floatlayout import FloatLayout
 from kivy.core.window import Window
 from kivy.core.text import LabelBase    
-from fifty_sounds import FiftySoundsPopup
-from words_list import WordsListPopup
+from functions.fifty_sounds import FiftySoundsPopup
+from functions.words_list import WordsListPopup
 from kivy.metrics import dp
 
 class MainView(FloatLayout):
