@@ -3,7 +3,7 @@
 ## 安裝套件
 
 ```bash
-pip install Kivy
+pip install -r requirements.txt
 ```
 
 ## 啟動
