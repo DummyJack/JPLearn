@@ -76,7 +76,7 @@ class MainView(FloatLayout):
 
 class JapaneseLearnApp(App):
     def build(self):
-        LabelBase.register(name='ChineseFont', fn_regular='./NotoSansTC-VariableFont_wght.ttf')
+        LabelBase.register(name='ChineseFont', fn_regular='./fonts/NotoSansTC-VariableFont_wght.ttf')
         Window.clearcolor = (0.94, 0.97, 1, 1)  # 設置窗口背景顏色
         return MainView()
 
