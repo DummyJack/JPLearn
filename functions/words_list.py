@@ -14,6 +14,10 @@ import re
 from pymongo import MongoClient
 from bson import ObjectId
 from math import ceil
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.animation import Animation
+from kivy.properties import StringProperty
+from kivy.clock import Clock
 
 # 建立 MongoDB 連接
 try:
@@ -28,7 +32,7 @@ except Exception as e:
 class JapaneseTextInput(TextInput):
     def insert_text(self, substring, from_undo=False):
         s = substring
-        # 只允許日文字符（平假名、片假名、漢字）
+        # 只允許日文字符（平假名、片假名、字）
         s = ''.join([c for c in s if '\u3040' <= c <= '\u30ff' or '\u4e00' <= c <= '\u9fff'])
         return super().insert_text(s, from_undo=from_undo)
 
@@ -231,12 +235,12 @@ class WordItem(BoxLayout):
     def _update_label_height(self, instance, size):
         instance.height = max(size[1], dp(70))  # 確保最小高度為70dp
         # 檢查是否只有一行文字
-        if size[1] <= dp(30):  # 假設單行文字的高度不超過30dp
+        if size[1] <= dp(30):  # 假單行文字的高度不超過30dp
             instance.valign = 'middle'
             instance.halign = 'center'  # 單行文字時居中對齊
         else:
             instance.valign = 'top'
-            instance.halign = 'left'  # 多行文字時左對齊
+            instance.halign = 'left'  # 多行字左對齊
 
     def delete_word(self, instance):
         self.delete_callback(self)
@@ -269,22 +273,52 @@ class WordsList(ScrollView):
             return
         self.layout.clear_widgets()
         total_words = words_collection.count_documents({})
-        self.total_pages = ceil(total_words / self.items_per_page)
+        self.total_pages = max(1, ceil(total_words / self.items_per_page))
         
         skip = (self.current_page - 1) * self.items_per_page
-        words = words_collection.find().skip(skip).limit(self.items_per_page)
+        words = list(words_collection.find().skip(skip).limit(self.items_per_page))
         
-        for word in words:
+        for word in reversed(words):
             self.add_word(word['japanese'], word['explanation'], word['_id'])
 
     def add_word(self, japanese, explanation, word_id=None):
-        word_item = WordItem(japanese, explanation, self.delete_word, self.edit_word, word_id)
-        self.layout.add_widget(word_item)
+        word_item = WordItem(japanese, explanation, self.show_delete_confirmation, self.edit_word, word_id)
+        self.layout.add_widget(word_item, index=0)
 
-    def delete_word(self, word_item):
+    def show_delete_confirmation(self, word_item):
+        content = BoxLayout(orientation='vertical', spacing=dp(40), padding=dp(20))  # 增加間距
+        content.add_widget(Label(text="是否刪除單字？", font_name='ChineseFont', font_size=dp(24)))
+        
+        buttons = BoxLayout(orientation='horizontal', spacing=dp(20), size_hint_y=None, height=dp(50))  # 增加按鈕高度
+        confirm_btn = Button(text="確定", font_name='ChineseFont', font_size=dp(18), size_hint=(None, None), size=(dp(100), dp(50)))  # 增加按鈕大小
+        cancel_btn = Button(text="取消", font_name='ChineseFont', font_size=dp(18), size_hint=(None, None), size=(dp(100), dp(50)))  # 增加按鈕大小
+        buttons.add_widget(Widget(size_hint_x=0.5))
+        buttons.add_widget(confirm_btn)
+        buttons.add_widget(cancel_btn)
+        buttons.add_widget(Widget(size_hint_x=0.5))
+        content.add_widget(buttons)
+
+        popup = Popup(content=content, size_hint=(0.6, 0.3), title="", separator_height=0)
+        
+        confirm_btn.bind(on_press=lambda x: self.delete_word(word_item, popup))
+        cancel_btn.bind(on_press=popup.dismiss)
+        
+        popup.open()
+
+    def delete_word(self, word_item, popup):
         words_collection.delete_one({'_id': word_item.word_id})
         self.layout.remove_widget(word_item)
+        
+        # 更新總單字數和總頁數
+        total_words = words_collection.count_documents({})
+        new_total_pages = max(1, ceil(total_words / self.items_per_page))
+        
+        # 檢查是否需要調整當前頁數
+        if self.current_page > new_total_pages:
+            self.current_page = new_total_pages
+        
         self.update_view()
+        popup.dismiss()
 
     def edit_word(self, word_item, new_japanese, new_explanation):
         words_collection.update_one(
@@ -293,7 +327,17 @@ class WordsList(ScrollView):
         )
 
     def update_view(self):
+        total_words = words_collection.count_documents({})
+        new_total_pages = max(1, ceil(total_words / self.items_per_page))
+        
+        self.total_pages = new_total_pages
+        
+        # 確保當前頁數不超過總頁數
+        self.current_page = min(self.current_page, self.total_pages)
+        
         self.load_words_from_db()
+        if hasattr(self, 'parent') and hasattr(self.parent, 'update_pagination'):
+            self.parent.update_pagination()
 
 class AddWordPopup(Popup):
     def __init__(
@@ -404,6 +448,50 @@ class AddWordPopup(Popup):
         self.dismiss()
         self.update_view_callback()  # 新增這行來更新視圖
 
+class ToolTip(Label):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.opacity = 0
+        self.size_hint = (None, None)
+        self.font_size = dp(14)
+        self.padding = [dp(5), dp(5)]
+        self.background_color = (0.2, 0.2, 0.2, 1)
+        self.color = (1, 1, 1, 1)
+
+    def show(self, duration=0.3):
+        Animation(opacity=1, duration=duration).start(self)
+
+    def hide(self, duration=0.3):
+        Animation(opacity=0, duration=duration).start(self)
+
+class TooltipButton(ButtonBehavior, Label):
+    tooltip_text = StringProperty('')
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.tooltip = ToolTip(text=self.tooltip_text)
+        self.bind(tooltip_text=self.update_tooltip)
+        self.tooltip_scheduled = None
+
+    def update_tooltip(self, instance, value):
+        self.tooltip.text = value
+
+    def on_enter(self, *args):
+        def show_tooltip(dt):
+            if self.parent:
+                self.tooltip.pos = (self.x, self.y - self.tooltip.height)
+                self.parent.add_widget(self.tooltip)
+                self.tooltip.show()
+
+        self.tooltip_scheduled = Clock.schedule_once(show_tooltip, 0.5)
+
+    def on_leave(self, *args):
+        if self.tooltip_scheduled:
+            self.tooltip_scheduled.cancel()
+        if self.tooltip.parent:
+            self.tooltip.hide()
+            Clock.schedule_once(lambda dt: self.parent.remove_widget(self.tooltip), 0.3)
+
 class WordsListPopup(Popup):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -426,7 +514,13 @@ class WordsListPopup(Popup):
         explanation_layout = BoxLayout(orientation='horizontal', size_hint_x=0.7)
         explanation_layout.add_widget(Label(text="解釋", font_name='ChineseFont', font_size=dp(28), size_hint_x=0.8))
         
-        add_btn = Button(text="+", size_hint=(None, None), size=(dp(40), dp(40)), font_size=dp(24), pos_hint={'center_y': 0.5})
+        add_btn = Button(
+            text="+", 
+            size_hint=(None, None), 
+            size=(dp(40), dp(40)), 
+            font_size=dp(24), 
+            pos_hint={'center_y': 0.5}
+        )
         add_btn.bind(on_press=self.show_add_popup)
         explanation_layout.add_widget(add_btn)
         

@@ -16,7 +16,7 @@ class MainView(FloatLayout):
 
         # 添加標題
         title = Label(
-            text='日文快樂學', 
+            text='日語快樂學', 
             font_size=dp(60), 
             size_hint_y=None, 
             height=dp(100), 

@@ -16,11 +16,11 @@ pip install -r requirements.txt
 
 ### 音頻
 
-1. [學學日文之歌](https://www.youtube.com/watch?v=7I2Ryji_9Js)
+1. [學學日文之歌](https://www.youtube.com/watch?v=7I2Ryji_9Js){:target="\_blank"}
 
 ### Icons
 
-[Flaticon](https://www.flaticon.com/)
+[Flaticon](https://www.flaticon.com/){:target="\_blank"}
 
 ### 注意：本專案為學習用，程式碼由 Cursor 生成
 
