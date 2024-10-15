@@ -15,6 +15,7 @@ class FiftySoundsGrid(BoxLayout):
         self.spacing = dp(5)
         self.padding = dp(5)
 
+        # 定義五十音及其羅馬字對應
         sounds = "あa|いi|うu|えe|おo|かka|きki|くku|けke|こko|さsa|しshi|すsu|せse|そso|たta|ちchi|つtsu|てte|とto|なna|にni|ぬnu|ねne|のno|はha|ひhi|ふfu|へhe|ほho|まma|みmi|むmu|めme|もmo|やya|ゆyu|よyo|らra|りri|るru|れre|ろro|わwa|をo|んn"
         self.sounds = sounds.split("|")
         self.button_size = dp(70)
@@ -28,15 +29,18 @@ class FiftySoundsGrid(BoxLayout):
     def update_layout(self, *args):
         self.clear_widgets()
         width = self.width if self.width else Window.width
+        # 計算每行最多可以放置的按鈕數量
         max_buttons_per_row = max(1, int((width - self.spacing) / (self.button_size + self.spacing)))
         
         current_row = None
         for i, sound in enumerate(self.sounds):
             if i % max_buttons_per_row == 0:
+                # 創建新的一行
                 current_row = BoxLayout(orientation='horizontal', spacing=self.spacing, size_hint_y=None, height=self.button_size)
                 self.add_widget(current_row)
 
             japanese, romaji = sound[0], sound[1:]
+            # 創建五十音按鈕
             btn = Button(
                 text=f'[size=30]{japanese}[/size]\n[size=24]{romaji}[/size]',
                 markup=True,
@@ -55,7 +59,6 @@ class FiftySoundsGrid(BoxLayout):
         spacer = BoxLayout(size_hint_x=None, width=dp(10))
         current_row.add_widget(spacer)
 
-        # 添加"一首歌記住五十音"按鈕
         song_btn = Button(
             text='一首歌記住五十音',
             font_name='ChineseFont',
@@ -69,12 +72,14 @@ class FiftySoundsGrid(BoxLayout):
         current_row.add_widget(song_btn)
 
     def play_sound(self, instance):
+        # 播放單個音節的聲音
         sound = instance.text.split()[0].strip("[size=30][/")  # 獲取日文字符
         sound_file = f"sounds/{sound}.mp3"
         self._play_audio(instance, sound_file, sound)
 
     def play_song(self, instance):
-        song_file = "sounds/fifty_sounds_song.mp3"  # 假設歌曲文件名為 fifty_sounds_song.mp3
+        # 播放五十音歌曲
+        song_file = "sounds/fifty_sounds_song.mp3" 
         self._play_audio(instance, song_file, "五十音歌曲")
 
     def _play_audio(self, instance, audio_file, audio_name):
@@ -109,6 +114,7 @@ class FiftySoundsGrid(BoxLayout):
                         btn.background_color = (0.5, 0.7, 1, 1)
 
     def on_size(self, *args):
+        # 當視窗大小改變時，更新佈局
         self.update_layout()
 
 class FiftySoundsPopup(Popup):
@@ -120,9 +126,11 @@ class FiftySoundsPopup(Popup):
         
         content = BoxLayout(orientation='vertical', spacing=dp(20))  # 增加間距
 
+        # 添加標題欄
         title_bar = TitleBar("五十音", self.dismiss)
         content.add_widget(title_bar)
 
+        # 創建五十音網格
         self.grid = FiftySoundsGrid()
         content.add_widget(self.grid)
         

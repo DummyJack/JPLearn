@@ -8,7 +8,7 @@ class TitleBar(BoxLayout):
         super().__init__(**kwargs)
         self.orientation = 'horizontal'
         self.size_hint_y = None
-        self.height = 30  # 增加高度以適應更大的字體
+        self.height = 30
 
-        self.title_label = Label(text=title, font_name='ChineseFont', font_size=48, size_hint_x=0.9)  # 增大字體大小
+        self.title_label = Label(text=title, font_name='ChineseFont', font_size=48, size_hint_x=0.9) 
         self.add_widget(self.title_label)

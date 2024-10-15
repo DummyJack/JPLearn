@@ -9,10 +9,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.widget import Widget 
 from kivy.metrics import dp
 from kivy.uix.anchorlayout import AnchorLayout
-from kivy.uix.image import Image
-import re
 from pymongo import MongoClient
-from bson import ObjectId
 from math import ceil
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.animation import Animation
@@ -32,7 +29,7 @@ except Exception as e:
 class JapaneseTextInput(TextInput):
     def insert_text(self, substring, from_undo=False):
         s = substring
-        # 只允許日文字符（平假名、片假名、字）
+        # 只允許日文字符（平假名、片假名、漢字）
         s = ''.join([c for c in s if '\u3040' <= c <= '\u30ff' or '\u4e00' <= c <= '\u9fff'])
         return super().insert_text(s, from_undo=from_undo)
 
@@ -118,18 +115,21 @@ class EditWordPopup(Popup):
         self.word_id = word_id
 
     def on_japanese_input(self, instance, value):
+        # 檢查輸入是否只包含日文字符
         if not all(self.is_japanese_char(c) for c in value if c.strip()):
             self.error_label.text = "請只輸入日文字符"
         else:
             self.error_label.text = ""
 
     def is_japanese_char(self, char):
+        # 檢查字符是否為日文（平假名、片假名、漢字）
         return '\u3040' <= char <= '\u30ff' or '\u4e00' <= char <= '\u9fff'
 
     def edit_word(self, instance):
         japanese = self.japanese_input.text.strip()
         explanation = self.explanation_input.text.strip()
         
+        # 驗證輸入
         if not japanese:
             self.error_label.text = "必須輸入單字"
             return
@@ -201,7 +201,7 @@ class WordItem(BoxLayout):
         
         edit_btn = Button(
             size_hint=(None, None), 
-            size=(dp(30), dp(30)),  # 調整大小為30x30
+            size=(dp(30), dp(30)),
             background_normal='icons/edit_icon.png',
             background_down='icons/edit_icon.png',
             border=(0,0,0,0)
@@ -210,14 +210,13 @@ class WordItem(BoxLayout):
         
         delete_btn = Button(
             size_hint=(None, None), 
-            size=(dp(30), dp(30)),  # 調整大小為30x30
+            size=(dp(30), dp(30)),
             background_normal='icons/delete_icon.png',
             background_down='icons/delete_icon.png',
             border=(0,0,0,0)
         )
         delete_btn.bind(on_press=self.delete_word)
 
-        # 使用 AnchorLayout 來使按鈕垂直居中
         button_anchor = AnchorLayout(anchor_x='center', anchor_y='center', size_hint_x=None, width=dp(70))
         button_inner_layout = BoxLayout(orientation='horizontal', spacing=dp(5), size_hint=(None, None), size=(dp(65), dp(30)))
         button_inner_layout.add_widget(edit_btn)
@@ -233,14 +232,14 @@ class WordItem(BoxLayout):
         self.word_id = word_id
 
     def _update_label_height(self, instance, size):
-        instance.height = max(size[1], dp(70))  # 確保最小高度為70dp
+        instance.height = max(size[1], dp(70)) 
         # 檢查是否只有一行文字
-        if size[1] <= dp(30):  # 假單行文字的高度不超過30dp
+        if size[1] <= dp(30):
             instance.valign = 'middle'
-            instance.halign = 'center'  # 單行文字時居中對齊
+            instance.halign = 'center' 
         else:
             instance.valign = 'top'
-            instance.halign = 'left'  # 多行字左對齊
+            instance.halign = 'left'
 
     def delete_word(self, instance):
         self.delete_callback(self)
@@ -275,9 +274,12 @@ class WordsList(ScrollView):
         total_words = words_collection.count_documents({})
         self.total_pages = max(1, ceil(total_words / self.items_per_page))
         
+        # 計算要跳過的文檔數量
         skip = (self.current_page - 1) * self.items_per_page
+        # 從數據庫獲取當前頁的單詞
         words = list(words_collection.find().skip(skip).limit(self.items_per_page))
         
+        # 反向添加單詞，使最新的單詞顯示在頂部
         for word in reversed(words):
             self.add_word(word['japanese'], word['explanation'], word['_id'])
 
@@ -349,7 +351,7 @@ class AddWordPopup(Popup):
 
         layout = BoxLayout(orientation='vertical', spacing=dp(20), padding=dp(20))
 
-        input_layout = BoxLayout(orientation='horizontal', spacing=dp(10), size_hint_y=None, height=dp(150))  # 增加高度
+        input_layout = BoxLayout(orientation='horizontal', spacing=dp(10), size_hint_y=None, height=dp(150))
 
         # 日文輸入框
         self.japanese_input = JapaneseTextInput(
@@ -408,10 +410,10 @@ class AddWordPopup(Popup):
             size=(dp(100), dp(40))
         )
 
-        button_layout.add_widget(Widget())  # 添加一個空白Widget來將按鈕置中
+        button_layout.add_widget(Widget())
         button_layout.add_widget(add_button)
         button_layout.add_widget(cancel_button)
-        button_layout.add_widget(Widget())  # 添加一個空白Widget來將按鈕置中
+        button_layout.add_widget(Widget())
 
         layout.add_widget(button_layout)
 
@@ -420,18 +422,21 @@ class AddWordPopup(Popup):
         self.update_view_callback = update_view_callback
 
     def on_japanese_input(self, instance, value):
+        # 檢查輸入是否只包含日文字符
         if not all(self.is_japanese_char(c) for c in value if c.strip()):
             self.error_label.text = "請只輸入日文字符"
         else:
             self.error_label.text = ""
 
     def is_japanese_char(self, char):
+        # 檢查字符是否為日文（平假名、片假名、漢字）
         return '\u3040' <= char <= '\u30ff' or '\u4e00' <= char <= '\u9fff'
 
     def add_word(self, instance):
         japanese = self.japanese_input.text.strip()
         explanation = self.explanation_input.text.strip()
         
+        # 驗證輸入
         if not japanese:
             self.error_label.text = "必須輸入單字"
             return
@@ -446,7 +451,7 @@ class AddWordPopup(Popup):
         result = words_collection.insert_one({'japanese': japanese, 'explanation': explanation})
         self.add_word_callback(japanese, explanation, result.inserted_id)
         self.dismiss()
-        self.update_view_callback()  # 新增這行來更新視圖
+        self.update_view_callback() 
 
 class ToolTip(Label):
     def __init__(self, **kwargs):
