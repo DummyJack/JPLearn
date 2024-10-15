@@ -1,4 +1,4 @@
-# 日文學一學
+# 日語學一學(開發中)
 
 ## 安裝套件
 
@@ -12,13 +12,17 @@ pip install -r requirements.txt
 執行 main.py
 ```
 
-## 注意
+## 來源
 
-### 音頻來源
+### 音頻
 
 1. [學學日文之歌](https://www.youtube.com/watch?v=7I2Ryji_9Js)
 
-### 本專案為學習用，程式碼由 Cursor 生成
+### Icons
+
+[Flaticon](https://www.flaticon.com/)
+
+### 注意：本專案為學習用，程式碼由 Cursor 生成
 
 ## TODO
 
