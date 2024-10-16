@@ -8,6 +8,7 @@ from components.custom_widgets import TitleBar
 from kivy.core.window import Window
 from kivy.metrics import dp
 from kivy.clock import Clock
+from kivy.uix.anchorlayout import AnchorLayout
 
 
 class FiftySoundsGrid(BoxLayout):
@@ -25,61 +26,89 @@ class FiftySoundsGrid(BoxLayout):
 
         self.current_audio = None
         self.current_button = None
-        self.audio_event = None  # 新增：用於存儲音頻事件
+        self.audio_event = None
 
         self.update_layout()
 
     def update_layout(self, *args):
         self.clear_widgets()
-        width = self.width if self.width else Window.width
-        # 計算每行最多可以放置的按鈕數量
-        max_buttons_per_row = max(
-            1, int((width - self.spacing) / (self.button_size + self.spacing))
+
+        # 固定每行9個按鈕
+        buttons_per_row = 9
+
+        for i in range(
+            0, len(self.sounds) - 1, buttons_per_row
+        ):  # 減1是為了排除最後的 "ん"
+            row = BoxLayout(
+                orientation="horizontal",
+                spacing=self.spacing,
+                size_hint_y=None,
+                height=self.button_size,
+            )
+            for j in range(buttons_per_row):
+                if i + j < len(self.sounds) - 1:  # 減1是為了排除最後的 "ん"
+                    sound = self.sounds[i + j]
+                    japanese, romaji = sound[0], sound[1:]
+                    btn = Button(
+                        text=f"[size=30]{japanese}[/size]\n[size=24]{romaji}[/size]",
+                        markup=True,
+                        font_name="ChineseFont",
+                        background_color=(0.5, 0.7, 1, 1),
+                        size_hint=(None, None),
+                        size=(self.button_size, self.button_size),
+                        halign="center",
+                        valign="middle",
+                        text_size=(self.button_size, self.button_size),
+                    )
+                    btn.bind(on_press=self.play_sound)
+                    row.add_widget(btn)
+            self.add_widget(row)
+
+        # 添加最後一行（包含 "ん" 和 "一首歌記住五十音" 按鈕）
+        last_row = BoxLayout(
+            orientation="horizontal",
+            spacing=self.spacing,
+            size_hint_y=None,
+            height=self.button_size,
         )
 
-        current_row = None
-        for i, sound in enumerate(self.sounds):
-            if i % max_buttons_per_row == 0:
-                # 創建新的一行
-                current_row = BoxLayout(
-                    orientation="horizontal",
-                    spacing=self.spacing,
-                    size_hint_y=None,
-                    height=self.button_size,
-                )
-                self.add_widget(current_row)
-
-            japanese, romaji = sound[0], sound[1:]
-            # 創建五十音按鈕
-            btn = Button(
-                text=f"[size=30]{japanese}[/size]\n[size=24]{romaji}[/size]",
-                markup=True,
-                font_name="ChineseFont",
-                background_color=(0.5, 0.7, 1, 1),
-                size_hint=(None, None),
-                size=(self.button_size, self.button_size),
-                halign="center",
-                valign="middle",
-                text_size=(self.button_size, self.button_size),
-            )
-            btn.bind(on_press=self.play_sound)
-            current_row.add_widget(btn)
+        # 添加 "ん" 按鈕
+        n_sound = self.sounds[-1]
+        n_japanese, n_romaji = n_sound[0], n_sound[1:]
+        n_btn = Button(
+            text=f"[size=30]{n_japanese}[/size]\n[size=24]{n_romaji}[/size]",
+            markup=True,
+            font_name="ChineseFont",
+            background_color=(0.5, 0.7, 1, 1),
+            size_hint=(None, None),
+            size=(self.button_size, self.button_size),
+            halign="center",
+            valign="middle",
+            text_size=(self.button_size, self.button_size),
+        )
+        n_btn.bind(on_press=self.play_sound)
+        last_row.add_widget(n_btn)
 
         # 添加間隔
-        spacer = BoxLayout(size_hint_x=None, width=dp(10))
-        current_row.add_widget(spacer)
+        spacer = BoxLayout(
+            size_hint_x=None, width=self.button_size * 5 + self.spacing * 4
+        )
+        last_row.add_widget(spacer)
 
+        # 添加 "一首歌記住五十音" 按鈕
         song_btn = Button(
             text="一首歌記住五十音",
             font_name="ChineseFont",
             background_color=(1, 0.7, 0.7, 1),
             size_hint=(None, None),
-            size=(self.button_size * 2.5, self.button_size),  # 增加寬度以容納文字
+            size=(self.button_size * 3, self.button_size),
             halign="center",
             valign="middle",
         )
         song_btn.bind(on_press=self.play_song)
-        current_row.add_widget(song_btn)
+        last_row.add_widget(song_btn)
+
+        self.add_widget(last_row)
 
     def play_sound(self, instance):
         # 播放單個音節的聲音
@@ -98,7 +127,7 @@ class FiftySoundsGrid(BoxLayout):
             if self.audio_event:
                 self.audio_event.cancel()  # 取消之前的事件
             if self.current_button == instance:
-                # 如果按下的是當前正在播放的按鈕，則停止播放並重置狀態
+                # 如果按下的是前正在播放的按鈕，則停止播放並重置狀態
                 self._reset_audio_state()
                 print(f"停止播放音頻: {audio_name}")
                 return
@@ -147,31 +176,38 @@ class FiftySoundsGrid(BoxLayout):
                 if isinstance(btn, Button) and btn != current_instance:
                     self._reset_button_color(btn)
 
-    def on_size(self, *args):
-        # 當視窗大小改變時，更新佈局
-        self.update_layout()
-
 
 class FiftySoundsPopup(Popup):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.title = ""
         self.separator_height = 0
-        self.size_hint = (0.9, 0.9)
+        self.size_hint = (None, None)
+        self.size = (dp(800), dp(600))
 
-        content = BoxLayout(orientation="vertical", spacing=dp(20))  # 增加間距
+        content = BoxLayout(orientation="vertical", spacing=dp(20))
 
-        # 添加標題欄
         title_bar = TitleBar("五十音", self.dismiss)
         content.add_widget(title_bar)
 
-        # 創建五十音網格
+        # 創建一個 AnchorLayout 來包裹 FiftySoundsGrid
+        anchor_layout = AnchorLayout(anchor_x="center", anchor_y="center")
+
+        # 創建一個 BoxLayout 來包裹 FiftySoundsGrid，並添加 padding
+        grid_container = BoxLayout(
+            orientation="vertical", padding=(dp(20), dp(20), dp(20), dp(20))
+        )
+
         self.grid = FiftySoundsGrid()
-        content.add_widget(self.grid)
+        grid_container.add_widget(self.grid)
+
+        # 將 grid_container 添加到 AnchorLayout 中
+        anchor_layout.add_widget(grid_container)
+
+        # 將 AnchorLayout 添加到主要內容中
+        content.add_widget(anchor_layout)
 
         self.content = content
 
-    def on_size(self, *args):
-        # 當彈出窗口大小改變時，調整網格的列數和寬度
-        if hasattr(self, "grid"):
-            self.grid.update_layout()
+
+# FiftySoundsGrid 類保持不變
