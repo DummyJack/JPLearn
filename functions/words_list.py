@@ -15,6 +15,9 @@ from kivy.uix.behaviors import ButtonBehavior
 from kivy.animation import Animation
 from kivy.properties import StringProperty
 from kivy.clock import Clock
+from kivy.graphics import Color, RoundedRectangle
+from kivy.core.image import Image as CoreImage
+from kivy.uix.image import Image
 
 # 建立 MongoDB 連接
 try:
@@ -29,7 +32,7 @@ except Exception as e:
 class JapaneseTextInput(TextInput):
     def insert_text(self, substring, from_undo=False):
         s = substring
-        # 只允許日文字符（平假名、片假名、漢字）
+        # 只允許日文字符平假名、片假名、漢字）
         s = ''.join([c for c in s if '\u3040' <= c <= '\u30ff' or '\u4e00' <= c <= '\u9fff'])
         return super().insert_text(s, from_undo=from_undo)
 
@@ -48,7 +51,7 @@ class EditWordPopup(Popup):
         self.japanese_input = JapaneseTextInput(
             text=japanese,
             multiline=True,
-            hint_text='請輸入單字',
+            hint_text='輸入單字',
             font_name='ChineseFont',
             font_size=dp(18),
             size_hint_x=0.3,
@@ -264,22 +267,40 @@ class WordsList(ScrollView):
         self.current_page = 1
         self.items_per_page = 5
         self.total_pages = 1
+        self.search_mode = False
+        self.search_results = []
+        self.last_search_term = ""
         self.load_words_from_db()
+
+    def search_words(self, search_term):
+        self.last_search_term = search_term
+        if not search_term:
+            self.search_mode = False
+            self.load_words_from_db()
+            return
+
+        self.search_mode = True
+        self.search_results = list(words_collection.find({"japanese": {"$regex": search_term, "$options": "i"}}))
+        self.total_pages = max(1, ceil(len(self.search_results) / self.items_per_page))
+        self.current_page = 1
+        self.update_view()
 
     def load_words_from_db(self):
         if words_collection is None:
             print("無法連接到數據庫，無法加載單詞")
             return
         self.layout.clear_widgets()
-        total_words = words_collection.count_documents({})
+        
+        if self.search_mode:
+            total_words = len(self.search_results)
+            words = self.search_results[(self.current_page - 1) * self.items_per_page : self.current_page * self.items_per_page]
+        else:
+            total_words = words_collection.count_documents({})
+            skip = (self.current_page - 1) * self.items_per_page
+            words = list(words_collection.find().skip(skip).limit(self.items_per_page))
+        
         self.total_pages = max(1, ceil(total_words / self.items_per_page))
         
-        # 計算要跳過的文檔數量
-        skip = (self.current_page - 1) * self.items_per_page
-        # 從數據庫獲取當前頁的單詞
-        words = list(words_collection.find().skip(skip).limit(self.items_per_page))
-        
-        # 反向添加單詞，使最新的單詞顯示在頂部
         for word in reversed(words):
             self.add_word(word['japanese'], word['explanation'], word['_id'])
 
@@ -329,12 +350,14 @@ class WordsList(ScrollView):
         )
 
     def update_view(self):
-        total_words = words_collection.count_documents({})
+        if self.search_mode:
+            total_words = len(self.search_results)
+        else:
+            total_words = words_collection.count_documents({})
+        
         new_total_pages = max(1, ceil(total_words / self.items_per_page))
         
         self.total_pages = new_total_pages
-        
-        # 確保當前頁數不超過總頁數
         self.current_page = min(self.current_page, self.total_pages)
         
         self.load_words_from_db()
@@ -347,7 +370,7 @@ class AddWordPopup(Popup):
         super().__init__(**kwargs)
         self.title = ""
         self.separator_height = 0
-        self.size_hint = (0.9, 0.6)  # 增加高度以容納更高的輸入框
+        self.size_hint = (0.9, 0.6)  # 增加高以容納更高的輸入框
 
         layout = BoxLayout(orientation='vertical', spacing=dp(20), padding=dp(20))
 
@@ -516,8 +539,8 @@ class WordsListPopup(Popup):
         word_header.add_widget(Label(text="單字", font_name='ChineseFont', font_size=dp(28)))
         header.add_widget(word_header)
         
-        explanation_layout = BoxLayout(orientation='horizontal', size_hint_x=0.7)
-        explanation_layout.add_widget(Label(text="解釋", font_name='ChineseFont', font_size=dp(28), size_hint_x=0.8))
+        explanation_layout = BoxLayout(orientation='horizontal', size_hint_x=0.7, spacing=dp(20))
+        explanation_layout.add_widget(Label(text="解釋", font_name='ChineseFont', font_size=dp(28), size_hint_x=0.7))
         
         add_btn = Button(
             text="+", 
@@ -527,7 +550,17 @@ class WordsListPopup(Popup):
             pos_hint={'center_y': 0.5}
         )
         add_btn.bind(on_press=self.show_add_popup)
+        
+        # 創建一個包含圖標的按鈕
+        search_btn = ButtonWithIcon(
+            icon='icons/search_icon.png',
+            size=(dp(40), dp(40)),
+            pos_hint={'center_y': 0.5}
+        )
+        search_btn.bind(on_press=self.show_search_popup)
+        
         explanation_layout.add_widget(add_btn)
+        explanation_layout.add_widget(search_btn)
         
         header.add_widget(explanation_layout)
         content.add_widget(header)
@@ -573,3 +606,79 @@ class WordsListPopup(Popup):
         if self.words_list.current_page < self.words_list.total_pages:
             self.words_list.current_page += 1
             self.update_view()
+
+    def show_search_popup(self, instance):
+        content = BoxLayout(orientation='horizontal', spacing=dp(10), padding=dp(10))
+        self.search_input = TextInput(
+            text=self.words_list.last_search_term,
+            multiline=False,
+            font_name='ChineseFont',
+            font_size=dp(18),
+            size_hint_x=0.8,
+            hint_text='搜尋日文單字',
+            background_color=(1, 1, 1, 1),  # 設置背景顏色為白色
+            background_normal='',  # 移除默認的背景圖片
+            padding=[dp(10), dp(5), dp(10), dp(5)]  # 添加內邊距
+        )
+        search_button = Button(
+            text="搜尋",
+            font_name='ChineseFont',
+            font_size=dp(18),
+            size_hint_x=0.2
+        )
+        search_button.bind(on_press=self.perform_search)
+        
+        content.add_widget(self.search_input)
+        content.add_widget(search_button)
+        
+        self.search_popup = Popup(
+            title="",
+            content=content,
+            size_hint=(0.8, 0.2),
+            auto_dismiss=True
+        )
+        self.search_popup.open()
+
+    def perform_search(self, instance):
+        search_term = self.search_input.text.strip()
+        self.words_list.search_words(search_term)
+        self.search_popup.dismiss()
+
+class ButtonWithIcon(ButtonBehavior, BoxLayout):
+    def __init__(self, icon, size, **kwargs):
+        super().__init__(**kwargs)
+        self.size_hint = (None, None)
+        self.size = size
+        self.orientation = 'vertical'
+        
+        with self.canvas.before:
+            Color(0.8, 0.8, 0.8, 1)  # 設置灰色背景
+            self.bg = RoundedRectangle(pos=self.pos, size=self.size, radius=[5,])
+        
+        icon_size = (size[0] * 0.6, size[1] * 0.6)  # 圖標大小為按鈕的60%
+        icon_image = Image(source=icon, size_hint=(None, None), size=icon_size)
+        
+        # 使用 AnchorLayout 來使圖標居中
+        icon_layout = AnchorLayout(anchor_x='center', anchor_y='center', size_hint=(1, 1))
+        icon_layout.add_widget(icon_image)
+        
+        self.add_widget(icon_layout)
+        
+        self.bind(pos=self.update_bg, size=self.update_bg)
+
+    def update_bg(self, *args):
+        self.bg.pos = self.pos
+        self.bg.size = self.size
+
+class ButtonWithBackground(Button):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.background_color = (0, 0, 0, 0)  # 設置按鈕背景為透明
+        with self.canvas.before:
+            Color(0.8, 0.8, 0.8, 1)  # 設置灰色背景
+            self.bg = RoundedRectangle(pos=self.pos, size=self.size, radius=[5,])
+        self.bind(pos=self.update_bg, size=self.update_bg)
+
+    def update_bg(self, *args):
+        self.bg.pos = self.pos
+        self.bg.size = self.size
