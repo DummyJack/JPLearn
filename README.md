@@ -26,5 +26,3 @@ pip install -r requirements.txt
 ### 注意：本專案為學習用，程式碼由 Cursor 生成
 
 ## TODO
-
-- 音頻要做剪接
