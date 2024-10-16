@@ -17,6 +17,7 @@ pip install -r requirements.txt
 ### 音頻
 
 1. [學學日文之歌](https://www.youtube.com/watch?v=7I2Ryji_9Js)
+2. [日語五十音](https://riyutool.com/50yinmp3)
 
 ### Icons
 
