@@ -609,22 +609,24 @@ class WordsListPopup(Popup):
 
     def show_search_popup(self, instance):
         content = BoxLayout(orientation='horizontal', spacing=dp(10), padding=dp(10))
+        
         self.search_input = TextInput(
             text=self.words_list.last_search_term,
             multiline=False,
             font_name='ChineseFont',
             font_size=dp(18),
-            size_hint_x=0.8,
+            size_hint_x=0.7,
             hint_text='搜尋日文單字',
-            background_color=(1, 1, 1, 1),  # 設置背景顏色為白色
-            background_normal='',  # 移除默認的背景圖片
-            padding=[dp(10), dp(5), dp(10), dp(5)]  # 添加內邊距
+            background_color=(1, 1, 1, 1),
+            background_normal='',
+            padding=[dp(10), dp(5), dp(10), dp(5)]
         )
+        
         search_button = Button(
             text="搜尋",
             font_name='ChineseFont',
             font_size=dp(18),
-            size_hint_x=0.2
+            size_hint_x=0.3
         )
         search_button.bind(on_press=self.perform_search)
         
@@ -635,6 +637,8 @@ class WordsListPopup(Popup):
             title="",
             content=content,
             size_hint=(0.8, 0.2),
+            separator_height=0,
+            background_color=(1, 1, 1, 1),  # 將背景顏色改為白色，與新增單字介面一致
             auto_dismiss=True
         )
         self.search_popup.open()
