@@ -195,7 +195,10 @@ class FiftySoundsPopup(Popup):
 
         # 創建一個 BoxLayout 來包裹 FiftySoundsGrid，並添加 padding
         grid_container = BoxLayout(
-            orientation="vertical", padding=(dp(20), dp(20), dp(20), dp(20))
+            orientation="vertical",
+            padding=(dp(20), dp(40), dp(40), dp(20)),  # 增加右側和頂部的 padding
+            size_hint=(None, None),
+            size=(dp(720), dp(480)),  # 設置固定大小
         )
 
         self.grid = FiftySoundsGrid()
