@@ -7,11 +7,13 @@ from kivy.core.audio import SoundLoader
 from components.custom_widgets import TitleBar
 from kivy.core.window import Window
 from kivy.metrics import dp
+from kivy.clock import Clock
+
 
 class FiftySoundsGrid(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.orientation = 'vertical'
+        self.orientation = "vertical"
         self.spacing = dp(5)
         self.padding = dp(5)
 
@@ -23,6 +25,7 @@ class FiftySoundsGrid(BoxLayout):
 
         self.current_audio = None
         self.current_button = None
+        self.audio_event = None  # 新增：用於存儲音頻事件
 
         self.update_layout()
 
@@ -30,27 +33,34 @@ class FiftySoundsGrid(BoxLayout):
         self.clear_widgets()
         width = self.width if self.width else Window.width
         # 計算每行最多可以放置的按鈕數量
-        max_buttons_per_row = max(1, int((width - self.spacing) / (self.button_size + self.spacing)))
-        
+        max_buttons_per_row = max(
+            1, int((width - self.spacing) / (self.button_size + self.spacing))
+        )
+
         current_row = None
         for i, sound in enumerate(self.sounds):
             if i % max_buttons_per_row == 0:
                 # 創建新的一行
-                current_row = BoxLayout(orientation='horizontal', spacing=self.spacing, size_hint_y=None, height=self.button_size)
+                current_row = BoxLayout(
+                    orientation="horizontal",
+                    spacing=self.spacing,
+                    size_hint_y=None,
+                    height=self.button_size,
+                )
                 self.add_widget(current_row)
 
             japanese, romaji = sound[0], sound[1:]
             # 創建五十音按鈕
             btn = Button(
-                text=f'[size=30]{japanese}[/size]\n[size=24]{romaji}[/size]',
+                text=f"[size=30]{japanese}[/size]\n[size=24]{romaji}[/size]",
                 markup=True,
-                font_name='ChineseFont',
+                font_name="ChineseFont",
                 background_color=(0.5, 0.7, 1, 1),
                 size_hint=(None, None),
                 size=(self.button_size, self.button_size),
-                halign='center',
-                valign='middle',
-                text_size=(self.button_size, self.button_size)
+                halign="center",
+                valign="middle",
+                text_size=(self.button_size, self.button_size),
             )
             btn.bind(on_press=self.play_sound)
             current_row.add_widget(btn)
@@ -60,13 +70,13 @@ class FiftySoundsGrid(BoxLayout):
         current_row.add_widget(spacer)
 
         song_btn = Button(
-            text='一首歌記住五十音',
-            font_name='ChineseFont',
+            text="一首歌記住五十音",
+            font_name="ChineseFont",
             background_color=(1, 0.7, 0.7, 1),
             size_hint=(None, None),
             size=(self.button_size * 2.5, self.button_size),  # 增加寬度以容納文字
-            halign='center',
-            valign='middle',
+            halign="center",
+            valign="middle",
         )
         song_btn.bind(on_press=self.play_song)
         current_row.add_widget(song_btn)
@@ -79,17 +89,17 @@ class FiftySoundsGrid(BoxLayout):
 
     def play_song(self, instance):
         # 播放五十音歌曲
-        song_file = "sounds/fifty_sounds_song.mp3" 
+        song_file = "sounds/fifty_sounds_song.mp3"
         self._play_audio(instance, song_file, "五十音歌曲")
 
     def _play_audio(self, instance, audio_file, audio_name):
         if self.current_audio:
             self.current_audio.stop()
+            if self.audio_event:
+                self.audio_event.cancel()  # 取消之前的事件
             if self.current_button == instance:
                 # 如果按下的是當前正在播放的按鈕，則停止播放並重置狀態
-                self.current_audio = None
-                self.current_button = None
-                instance.background_color = (0.5, 0.7, 1, 1) if audio_name != "五十音歌曲" else (1, 0.7, 0.7, 1)
+                self._reset_audio_state()
                 print(f"停止播放音頻: {audio_name}")
                 return
 
@@ -101,21 +111,46 @@ class FiftySoundsGrid(BoxLayout):
             self.current_button = instance
             instance.background_color = (1, 0.5, 0.5, 1)  # 改變按鈕顏色以表示正在播放
             print(f"播放音頻: {audio_name}")
+
+            # 設置音頻結束後的回調
+            self.audio_event = Clock.schedule_once(self._on_audio_finish, audio.length)
         else:
             print(f"未找到音頻文件: {audio_file}")
 
         # 重置其他按鈕的顏色
+        self._reset_other_buttons(instance)
+
+    def _on_audio_finish(self, dt):
+        # 音頻播放結束後的回調函數
+        self._reset_audio_state()
+
+    def _reset_audio_state(self):
+        if self.current_audio:
+            self.current_audio.stop()
+        self.current_audio = None
+        if self.current_button:
+            self._reset_button_color(self.current_button)
+        self.current_button = None
+        if self.audio_event:
+            self.audio_event.cancel()
+        self.audio_event = None
+
+    def _reset_button_color(self, button):
+        if button.text == "一首歌記住五十音":
+            button.background_color = (1, 0.7, 0.7, 1)
+        else:
+            button.background_color = (0.5, 0.7, 1, 1)
+
+    def _reset_other_buttons(self, current_instance):
         for child in self.children:
             for btn in child.children:
-                if isinstance(btn, Button) and btn != instance:
-                    if btn.text == '一首歌\n記住\n五十音':
-                        btn.background_color = (1, 0.7, 0.7, 1)
-                    else:
-                        btn.background_color = (0.5, 0.7, 1, 1)
+                if isinstance(btn, Button) and btn != current_instance:
+                    self._reset_button_color(btn)
 
     def on_size(self, *args):
         # 當視窗大小改變時，更新佈局
         self.update_layout()
+
 
 class FiftySoundsPopup(Popup):
     def __init__(self, **kwargs):
@@ -123,8 +158,8 @@ class FiftySoundsPopup(Popup):
         self.title = ""
         self.separator_height = 0
         self.size_hint = (0.9, 0.9)
-        
-        content = BoxLayout(orientation='vertical', spacing=dp(20))  # 增加間距
+
+        content = BoxLayout(orientation="vertical", spacing=dp(20))  # 增加間距
 
         # 添加標題欄
         title_bar = TitleBar("五十音", self.dismiss)
@@ -133,10 +168,10 @@ class FiftySoundsPopup(Popup):
         # 創建五十音網格
         self.grid = FiftySoundsGrid()
         content.add_widget(self.grid)
-        
+
         self.content = content
 
     def on_size(self, *args):
         # 當彈出窗口大小改變時，調整網格的列數和寬度
-        if hasattr(self, 'grid'):
+        if hasattr(self, "grid"):
             self.grid.update_layout()
