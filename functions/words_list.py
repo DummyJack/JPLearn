@@ -297,16 +297,23 @@ class WordsList(ScrollView):
         else:
             total_words = words_collection.count_documents({})
             skip = (self.current_page - 1) * self.items_per_page
-            words = list(words_collection.find().skip(skip).limit(self.items_per_page))
+            words = list(words_collection.find().sort('_id', -1).skip(skip).limit(self.items_per_page))
         
         self.total_pages = max(1, ceil(total_words / self.items_per_page))
         
-        for word in reversed(words):
+        for word in words:
             self.add_word(word['japanese'], word['explanation'], word['_id'])
 
     def add_word(self, japanese, explanation, word_id=None):
         word_item = WordItem(japanese, explanation, self.show_delete_confirmation, self.edit_word, word_id)
-        self.layout.add_widget(word_item, index=0)
+        if self.current_page == 1:
+            self.layout.add_widget(word_item, index=0)
+        else:
+            self.layout.add_widget(word_item)
+        
+        # 如果當前頁面已滿,移除最後一個單詞
+        if len(self.layout.children) > self.items_per_page:
+            self.layout.remove_widget(self.layout.children[-1])
 
     def show_delete_confirmation(self, word_item):
         content = BoxLayout(orientation='vertical', spacing=dp(40), padding=dp(20))  # 增加間距
