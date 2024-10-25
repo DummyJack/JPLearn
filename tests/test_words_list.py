@@ -12,7 +12,13 @@ from functions.words_list import (
 # 完全模擬 MongoDB，避免任何實際連接
 @pytest.fixture(scope="module", autouse=True)
 def mock_mongodb_module():
-    """模擬整個 MongoDB 模組"""
+    """Mock MongoDB module to prevent actual database connections
+
+    Sets up mock objects for:
+    - MongoClient
+    - Database
+    - Collection
+    """
     with patch("functions.words_list.MongoClient", autospec=True) as mock_client:
         # 創建所有需要的 mock 物件
         mock_db = MagicMock()
@@ -40,11 +46,13 @@ def mock_mongodb_module():
 
 @pytest.fixture
 def japanese_input():
+    """Create a fresh JapaneseTextInput instance for testing"""
     return JapaneseTextInput()
 
 
 @pytest.fixture
 def word_item():
+    """Create a WordItem instance with mock callbacks"""
     return WordItem(
         word="テスト",
         explanation="測試",
@@ -56,6 +64,7 @@ def word_item():
 
 @pytest.fixture
 def edit_popup():
+    """Create an EditWordPopup instance with mock callback"""
     return EditWordPopup(
         japanese="テスト",
         explanation="測試",
@@ -64,7 +73,17 @@ def edit_popup():
     )
 
 
+@pytest.mark.input
 def test_japanese_text_input(japanese_input):
+    """Test JapaneseTextInput filtering functionality
+
+    Verifies:
+    - Hiragana input
+    - Katakana input
+    - Kanji input
+    - Mixed input filtering
+    - Non-Japanese character filtering
+    """
     # 測試平假名輸入
     japanese_input.text = ""  # 清空初始文字
     japanese_input.insert_text("あいうえお")
@@ -91,7 +110,15 @@ def test_japanese_text_input(japanese_input):
     assert japanese_input.text == ""  # 非日文字符應被過濾掉
 
 
+@pytest.mark.crud
 def test_word_item_crud(word_item, mock_mongodb_module):
+    """Test WordItem CRUD operations
+
+    Verifies:
+    - Word update functionality
+    - Word deletion functionality
+    - Callback triggering
+    """
     # 測試更新
     word_item.update_word("新テスト", "新測試")
     assert word_item.word == "新テスト"
@@ -102,13 +129,28 @@ def test_word_item_crud(word_item, mock_mongodb_module):
     word_item.delete_callback.assert_called_once_with(word_item)
 
 
+@pytest.mark.ui
 def test_edit_popup_initialization(edit_popup):
+    """Test EditWordPopup initial state
+
+    Verifies:
+    - Initial input field values
+    - Initial error label state
+    """
     assert edit_popup.japanese_input.text == "テスト"
     assert edit_popup.explanation_input.text == "測試"
     assert edit_popup.error_label.text == ""
 
 
+@pytest.mark.validation
 def test_edit_popup_validation(edit_popup):
+    """Test EditWordPopup input validation
+
+    Verifies:
+    - Empty input handling
+    - Invalid character handling
+    - Valid input processing
+    """
     # 測試空白輸入
     edit_popup.japanese_input.text = ""
     edit_popup.edit_word(None)
@@ -140,11 +182,29 @@ def test_edit_popup_validation(edit_popup):
         ("@", False),
     ],
 )
+@pytest.mark.validation
 def test_is_japanese_char(edit_popup, char, expected):
+    """Test Japanese character validation
+
+    Verifies correct identification of:
+    - Hiragana
+    - Katakana
+    - Kanji
+    - Non-Japanese characters
+    """
     assert edit_popup.is_japanese_char(char) == expected
 
 
+@pytest.mark.search
 def test_words_list_search(mock_mongodb_module):
+    """Test WordsList search functionality
+
+    Verifies:
+    - Search query construction
+    - MongoDB query execution
+    - Search results processing
+    - Pagination handling
+    """
     # 設置 mock 搜尋結果
     mock_find = MagicMock()
     # Update the sort method to use list of tuples
