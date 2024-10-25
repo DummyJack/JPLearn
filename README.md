@@ -26,3 +26,7 @@ pip install -r requirements.txt
 ### 注意：本專案為學習用，程式碼由 Cursor 生成
 
 ## TODO
+
+- [ ] 理解 Cursor(主要)
+
+  今天要做 Cursor 困難點是什麼
