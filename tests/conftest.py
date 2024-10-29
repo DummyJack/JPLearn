@@ -1,22 +1,21 @@
 import pytest
 from kivy.base import EventLoop
 from kivy.core.window import Window
-from kivy.context import Context
-from kivy.clock import Clock
-from kivy.app import App
 from kivy.core.text import LabelBase
-import platform
+import os
 
 
 @pytest.fixture(autouse=True)
 def kivy_config():
-    # Register a fallback font or your actual Chinese font
+    # 使用相對路徑找到字體文件
+    font_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 
+                            'fonts', 
+                            'NotoSansTC-VariableFont_wght.ttf')
+    
     LabelBase.register(
         name="ChineseFont",
-        fn_regular=r"C:\Users\Jack\Desktop\JPLearn\fonts\NotoSansTC-VariableFont_wght.ttf",
-    )  # Added 'r' prefix
-    # Or use a system font instead
-    # LabelBase.register(name='ChineseFont', fn_regular='Arial')
-
+        fn_regular=font_path
+    )
+    
     EventLoop.ensure_window()
     yield

@@ -7,3 +7,4 @@ htmlcov/
 report.html
 assets/
 .DS_Store
+.vscode/
