@@ -1,11 +1,25 @@
 [tool.pytest.ini_options]
-pythonpath = "."
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+addopts = "-v --tb=short --cov=functions --cov-report=term-missing --cov-report=html"
 markers = [
     "ui: UI component tests",
     "input: Input handling tests",
     "crud: CRUD operation tests",
     "validation: Input validation tests",
     "search: Search functionality tests"
+]
+
+[tool.coverage.run]
+source = ["functions"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "pass",
+    "raise ImportError",
 ]

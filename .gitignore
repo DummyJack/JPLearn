@@ -2,7 +2,6 @@ components/__pycache__/
 functions/__pycache__/
 tests/__pycache__/
 .coverage
-coverage.xml
 htmlcov/
 report.html
 assets/

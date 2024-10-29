@@ -12,6 +12,26 @@ pip install -r requirements.txt
 執行 main.py
 ```
 
+## 測試
+
+### 設置環境
+
+```bash
+pip install -r tests/requirements-dev.txt
+```
+
+### 執行測試
+
+```bash
+python -m pytest
+``` 
+
+### 生成覆蓋率報告
+
+```bash
+python -m pytest --cov=functions --cov-report=term-missing --cov-report=html
+```
+
 ## 來源
 
 ### 音頻

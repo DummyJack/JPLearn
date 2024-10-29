@@ -2,3 +2,5 @@ pytest>=7.0.0
 pytest-cov>=4.1.0
 pytest-mock>=3.12.0
 pytest-kivy==0.1.0.dev2
+coverage==5.3.1
+mock==5.1.0
