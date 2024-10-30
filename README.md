@@ -14,7 +14,7 @@ pip install -r requirements.txt
 
 ## 測試
 
-### 設置環境
+### 安裝測試套件
 
 ```bash
 pip install -r tests/requirements-dev.txt
@@ -44,5 +44,3 @@ python -m pytest --cov=functions --cov-report=term-missing --cov-report=html
 [Flaticon](https://www.flaticon.com/)
 
 ### 注意：本專案為學習用，程式碼由 Cursor 生成
-
-## TODO
