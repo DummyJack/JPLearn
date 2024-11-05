@@ -89,11 +89,11 @@ class FiftySoundsGrid(BoxLayout):
 
     def play_sound(self, instance):
         sound = instance.text.split()[0].strip("[size=30][/")
-        sound_file = f"sounds/{sound}.mp3"
+        sound_file = f"resources/sounds/{sound}.mp3"
         self._play_audio(instance, sound_file, sound)
 
     def play_song(self, instance):
-        song_file = "sounds/fifty_sounds_song.mp3"
+        song_file = "resources/sounds/fifty_sounds_song.mp3"
         self._play_audio(instance, song_file, "五十音歌曲")
 
     def _play_audio(self, instance, audio_file, audio_name):

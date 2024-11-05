@@ -267,8 +267,8 @@ class WordItem(BoxLayout):
         edit_btn = Button(
             size_hint=(None, None),
             size=(dp(30), dp(30)),
-            background_normal="icons/edit_icon.png",
-            background_down="icons/edit_icon.png",
+            background_normal="resources/icons/edit_icon.png",
+            background_down="resources/icons/edit_icon.png",
             border=(0, 0, 0, 0),
         )
         edit_btn.bind(on_press=self.edit_word)
@@ -276,8 +276,8 @@ class WordItem(BoxLayout):
         delete_btn = Button(
             size_hint=(None, None),
             size=(dp(30), dp(30)),
-            background_normal="icons/delete_icon.png",
-            background_down="icons/delete_icon.png",
+            background_normal="resources/icons/delete_icon.png",
+            background_down="resources/icons/delete_icon.png",
             border=(0, 0, 0, 0),
         )
         delete_btn.bind(on_press=self.delete_word)
@@ -702,7 +702,7 @@ class WordsListPopup(Popup):
 
         # 創建一個包含圖標的按鈕
         search_btn = ButtonWithIcon(
-            icon="icons/search_icon.png",
+            icon="resources/icons/search_icon.png",
             size=(dp(40), dp(40)),
             pos_hint={"center_y": 0.5},
         )
