@@ -111,7 +111,7 @@ class FiftySoundsGrid(BoxLayout):
             audio.play()
             self.current_audio = audio
             self.current_button = instance
-            instance.background_color = (1, 0.5, 0.5, 1)
+            instance.background_color = [1, 0.5, 0.5, 1]
             print(f"播放音頻: {audio_name}")
             self.audio_event = Clock.schedule_once(self._on_audio_finish, audio.length)
         else:

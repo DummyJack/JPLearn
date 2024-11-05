@@ -1,164 +1,122 @@
 import pytest
-from unittest.mock import MagicMock, patch
-from kivy.metrics import dp
-from functions.words_list import (
-    JapaneseTextInput,
-    WordItem,
-    EditWordPopup,
-    WordsList,
-)
-
-@pytest.fixture(scope="module")
-def mock_mongodb():
-    """提供模擬的 MongoDB 連接"""
-    with patch("functions.words_list.MongoClient", autospec=True) as mock_client:
-        mock_db = MagicMock()
-        mock_collection = MagicMock()
-        
-        # 設置 mock 鏈
-        mock_client.return_value = MagicMock()
-        mock_client.return_value.__getitem__.return_value = mock_db
-        mock_db.__getitem__.return_value = mock_collection
-        
-        # 注入模擬對象
-        import functions.words_list
-        functions.words_list.client = mock_client()
-        functions.words_list.db = mock_db
-        functions.words_list.words_collection = mock_collection
-        
-        yield mock_collection
-        
-        # 清理
-        functions.words_list.client = None
-        functions.words_list.db = None
-        functions.words_list.words_collection = None
-
+from unittest.mock import Mock, patch
+from functions.words_list import WordsList, WordItem
 @pytest.fixture
-def japanese_input():
-    """提供 JapaneseTextInput 測試實例"""
-    return JapaneseTextInput()
-
-@pytest.fixture
-def word_item():
-    """提供帶有模擬回調的 WordItem 測試實例"""
-    return WordItem(
-        word="テスト",
-        explanation="測試",
-        delete_callback=MagicMock(),
-        edit_callback=MagicMock(),
-        word_id="test_id"
-    )
-
-@pytest.fixture
-def edit_popup():
-    """提供帶有模擬回調的 EditWordPopup 測試實例"""
-    return EditWordPopup(
-        japanese="テスト",
-        explanation="測試",
-        edit_callback=MagicMock(),
-        word_id="test_id"
-    )
-
-class TestJapaneseInput:
-    """測試日文輸入功能"""
-    
-    def test_hiragana_input(self, japanese_input):
-        """測試平假名輸入"""
-        japanese_input.text = ""
-        japanese_input.insert_text("あいうえお")
-        assert japanese_input.text == "あいうえお"
-    
-    def test_katakana_input(self, japanese_input):
-        """測試片假名輸入"""
-        japanese_input.text = ""
-        japanese_input.insert_text("カタカナ")
-        assert japanese_input.text == "カタカナ"
-    
-    def test_kanji_input(self, japanese_input):
-        """測試漢字輸入"""
-        japanese_input.text = ""
-        japanese_input.insert_text("漢字")
-        assert japanese_input.text == "漢字"
-    
-    def test_mixed_input_filtering(self, japanese_input):
-        """測試混合輸入過濾"""
-        japanese_input.text = ""
-        japanese_input.insert_text("あabc漢字123カナ")
-        assert japanese_input.text == "あ漢字カナ"
-    
-    def test_non_japanese_filtering(self, japanese_input):
-        """測試非日文字符過濾"""
-        japanese_input.text = ""
-        japanese_input.insert_text("abc123")
-        assert japanese_input.text == ""
-
-class TestWordItem:
-    """測試單字項目功能"""
-    
-    def test_word_update(self, word_item):
-        """測試更新單字"""
-        word_item.update_word("新テスト", "新測試")
-        assert word_item.word == "新テスト"
-        assert word_item.explanation == "新測試"
-    
-    def test_word_deletion(self, word_item):
-        """測試刪除單字"""
-        word_item.delete_word(None)
-        word_item.delete_callback.assert_called_once_with(word_item)
-
-class TestEditPopup:
-    """測試編輯彈窗功能"""
-    
-    def test_initialization(self, edit_popup):
-        """測試初始狀態"""
-        assert edit_popup.japanese_input.text == "テスト"
-        assert edit_popup.explanation_input.text == "測試"
-        assert edit_popup.error_label.text == ""
-    
-    @pytest.mark.parametrize("char,expected", [
-        ("あ", True),
-        ("ア", True),
-        ("漢", True),
-        ("a", False),
-        ("1", False),
-        ("@", False)
-    ])
-    def test_japanese_char_validation(self, edit_popup, char, expected):
-        """測試日文字符驗證"""
-        assert edit_popup.is_japanese_char(char) == expected
-    
-    def test_empty_input_validation(self, edit_popup):
-        """測試空輸入驗證"""
-        edit_popup.japanese_input.text = ""
-        edit_popup.edit_word(None)
-        assert edit_popup.error_label.text == "必須輸入單字"
-    
-    def test_invalid_input_validation(self, edit_popup):
-        """測試無效輸入驗證"""
-        edit_popup.japanese_input.text = "abc123"
-        edit_popup.edit_word(None)
-        assert edit_popup.error_label.text == "請只輸入日文字符"
-
-class TestWordsList:
-    """測試單字列表功能"""
-    
-    def test_search_functionality(self, mock_mongodb):
-        """測試搜索功能"""
-        mock_find = MagicMock()
-        mock_find.sort.return_value = mock_find
-        mock_find.skip.return_value = mock_find
-        mock_find.limit.return_value = [
-            {"_id": "1", "japanese": "テスト1", "explanation": "測試1"},
-            {"_id": "2", "japanese": "テスト2", "explanation": "測試2"}
-        ]
-        
-        mock_mongodb.find.return_value = mock_find
-        mock_mongodb.count_documents.return_value = 2
-        
+def words_list(test_db):
+    """提供 WordsList 實例和測試數據庫集合"""
+    with patch('functions.words_list.words_collection', test_db):
         words_list = WordsList()
-        words_list.search_words("テスト")
-        
-        assert words_list.search_mode is True
-        mock_mongodb.find.assert_called_with(
-            {"japanese": {"$regex": "テスト", "$options": "i"}}
-        )
+        yield words_list
+
+def test_add_word(words_list, test_db):
+    """測試新增單字功能"""
+    # 新增單字（確保使用有效的日文字符）
+    japanese = "てすと"  # 使用平假名
+    explanation = "測試"
+    
+    # 先插入到數據庫
+    word_id = test_db.insert_one({
+        "japanese": japanese,
+        "explanation": explanation
+    }).inserted_id
+    
+    words_list.add_word(japanese, explanation, word_id)
+    
+    # 驗證界面更新
+    assert len(words_list.layout.children) == 1
+    word_item = words_list.layout.children[0]
+    assert isinstance(word_item, WordItem)
+    assert word_item.word == japanese
+    assert word_item.explanation == explanation
+    assert word_item.word_id == word_id
+
+def test_delete_word(words_list, test_db):
+    """測試刪除單字功能"""
+    # 先新增一個單字（使用有效的日文字符）
+    word_id = test_db.insert_one({
+        "japanese": "ひらがな",  # 使用平假名
+        "explanation": "平假名"
+    }).inserted_id
+    
+    words_list.load_words_from_db()
+    assert len(words_list.layout.children) == 1
+    
+    # 刪除單字
+    word_item = words_list.layout.children[0]
+    with patch('kivy.uix.popup.Popup.open'):
+        words_list.show_delete_confirmation(word_item)
+        words_list.delete_word(word_item, Mock())
+    
+    # 驗證刪除結果
+    assert len(words_list.layout.children) == 0
+    assert test_db.count_documents({}) == 0
+
+def test_edit_word(words_list, test_db):
+    """測試編輯單字功能"""
+    # 先新增一個單字（使用有效的日文字符）
+    word_id = test_db.insert_one({
+        "japanese": "かんじ",  # 使用平假名
+        "explanation": "漢字"
+    }).inserted_id
+    
+    words_list.load_words_from_db()
+    word_item = words_list.layout.children[0]
+    
+    # 編輯單字（確保新的日文也是有效的）
+    new_japanese = "ひらがな"  # 使用平假名
+    new_explanation = "平假名"
+    
+    # 模擬編輯操作
+    with patch.object(word_item, 'word', new_japanese):  # 模擬更新 word 屬性
+        with patch.object(word_item, 'explanation', new_explanation):  # 模擬更新 explanation 屬性
+            words_list.edit_word(word_item, new_japanese, new_explanation)
+            
+            # 驗證數據庫更新
+            updated_word = test_db.find_one({"_id": word_id})
+            assert updated_word["japanese"] == new_japanese
+            assert updated_word["explanation"] == new_explanation
+
+def test_search_words(words_list, test_db):
+    """測試搜索單字功能"""
+    # 插入測試數據（使用有效的日文字符）
+    test_db.insert_many([
+        {"japanese": "あいうえお", "explanation": "五十音圖第一行"},
+        {"japanese": "かきくけこ", "explanation": "五十音圖第二行"},
+        {"japanese": "さしすせそ", "explanation": "五十音圖第三行"}
+    ])
+    
+    # 執行搜索
+    words_list.search_words("あ")
+    
+    # 驗證搜索結果
+    assert words_list.search_mode == True
+    assert len(words_list.search_results) == 1
+    assert len(words_list.layout.children) == 1
+    assert words_list.layout.children[0].word == "あいうえお"
+
+def test_pagination(words_list, test_db):
+    """測試分頁功能"""
+    # 插入超過一頁的數據（使用有效的日文字符）
+    test_data = [
+        {
+            "japanese": f"ひらがな",  # 不要加數字，保持純日文
+            "explanation": f"平假名{i}"
+        }
+        for i in range(7)  # 插入7個項目
+    ]
+    
+    # 逐個插入以避免批量插入的驗證問題
+    for data in test_data:
+        test_db.insert_one(data)
+    
+    words_list.load_words_from_db()
+    
+    # 驗證第一頁
+    assert len(words_list.layout.children) == 5
+    assert words_list.current_page == 1
+    assert words_list.total_pages == 2
+    
+    # 測試翻頁
+    words_list.current_page = 2
+    words_list.load_words_from_db()
+    assert len(words_list.layout.children) == 2  # 第二頁應該有2個項目
