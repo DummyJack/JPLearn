@@ -157,7 +157,7 @@ class FiftySoundsPopup(Popup):
         content = BoxLayout(orientation="vertical", spacing=dp(20))
 
         title_layout = AnchorLayout(anchor_x='center', anchor_y='center', size_hint_y=None, height=dp(50))
-        title_label = Label(
+        title = Label(
             text="五十音",
             font_name="ChineseFont",
             font_size=dp(36),
@@ -165,7 +165,7 @@ class FiftySoundsPopup(Popup):
             size_hint=(None, None),
             size=(dp(200), dp(50))
         )
-        title_layout.add_widget(title_label)
+        title_layout.add_widget(title)
         content.add_widget(title_layout)
 
         anchor_layout = AnchorLayout(anchor_x="center", anchor_y="center")
