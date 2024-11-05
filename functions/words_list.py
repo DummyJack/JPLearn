@@ -24,8 +24,46 @@ import re
 try:
     client = MongoClient("mongodb://localhost:27017/", serverSelectionTimeoutMS=5000)
     client.server_info()  # 測試連接
-    db = client["japanese_words"]
+    
+    # 檢查資料庫是否存在，不存在則創建
+    db_names = client.list_database_names()
+    if "japanese_db" not in db_names:
+        print("創建 japanese_db 資料庫")
+        db = client["japanese_db"]
+        # 創建一個文檔以確保資料庫被創建
+        db.words.insert_one({"japanese": "テスト", "explanation": "測試用單字"})
+    else:
+        db = client["japanese_db"]
+    
+    # 檢查集合是否存在
+    if "words" not in db.list_collection_names():
+        print("創建 words 集合")
+        db.create_collection("words")
+    
     words_collection = db["words"]
+
+    # 添加驗證器
+    db.command({
+        "collMod": "words",
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "required": ["japanese"],
+                "properties": {
+                    "japanese": {
+                        "bsonType": "string",
+                        "pattern": "^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+$",
+                        "description": "必須是日文（平假名、片假名或漢字）"
+                    },
+                    "explanation": {
+                        "bsonType": "string",
+                    }
+                }
+            }
+        },
+        "validationLevel": "strict",
+        "validationAction": "error"
+    })
 except Exception as e:
     print(f"無法連接到 MongoDB: {e}")
     words_collection = None
@@ -137,9 +175,9 @@ class EditWordPopup(Popup):
         self.word_id = word_id
 
     def on_japanese_input(self, instance, value):
-        # 檢查輸入是否只包含日文字符
+        # 檢查輸入是否只包含日文
         if not all(self.is_japanese_char(c) for c in value if c.strip()):
-            self.error_label.text = "請只輸入日文字符"
+            self.error_label.text = "請只輸入日文"
         else:
             self.error_label.text = ""
 
@@ -157,7 +195,7 @@ class EditWordPopup(Popup):
             return
 
         if not all(self.is_japanese_char(c) for c in japanese if c.strip()):
-            self.error_label.text = "請只輸入日文字符"
+            self.error_label.text = "請只輸入日文"
             return
 
         explanation = explanation if explanation else ""
@@ -418,7 +456,7 @@ class WordsList(ScrollView):
         words_collection.delete_one({"_id": word_item.word_id})
         self.layout.remove_widget(word_item)
 
-        # 更新總單字數和總頁數
+        # 更新總單字數和頁數
         total_words = words_collection.count_documents({})
         new_total_pages = max(1, ceil(total_words / self.items_per_page))
 
@@ -535,9 +573,9 @@ class AddWordPopup(Popup):
         self.update_view_callback = update_view_callback
 
     def on_japanese_input(self, instance, value):
-        # 檢查輸入是否只包含日文字符
+        # 檢查輸入是否只包含日文
         if not all(self.is_japanese_char(c) for c in value if c.strip()):
-            self.error_label.text = "請只輸入日文字符"
+            self.error_label.text = "請只輸入日文"
         else:
             self.error_label.text = ""
 
@@ -555,18 +593,26 @@ class AddWordPopup(Popup):
             return
 
         if not all(self.is_japanese_char(c) for c in japanese if c.strip()):
-            self.error_label.text = "請只輸入日文字符"
+            self.error_label.text = "請只輸入日文"
             return
 
         explanation = explanation if explanation else ""
 
-        # 插入新單字到資料庫
-        result = words_collection.insert_one(
-            {"japanese": japanese, "explanation": explanation}
-        )
-        self.add_word_callback(japanese, explanation, result.inserted_id)
-        self.dismiss()
-        self.update_view_callback()
+        # 檢查資料庫連接
+        if words_collection is None:
+            self.error_label.text = "資料庫連接失敗"
+            return
+
+        try:
+            # 插入新單字到資料庫
+            result = words_collection.insert_one(
+                {"japanese": japanese, "explanation": explanation}
+            )
+            self.add_word_callback(japanese, explanation, result.inserted_id)
+            self.dismiss()
+            self.update_view_callback()
+        except Exception as e:
+            self.error_label.text = f"新增失敗: {str(e)}"
 
 
 class ToolTip(Label):
