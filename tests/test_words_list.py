@@ -1,47 +1,55 @@
 import pytest
 from unittest.mock import Mock, patch
 from functions.words_list import WordsList, WordItem
+
+# 測試數據常量
+TEST_WORDS = {
+    "HIRAGANA": {"japanese": "ひらがな", "explanation": "平假名"},
+    "KANJI": {"japanese": "かんじ", "explanation": "漢字"},
+    "TEST": {"japanese": "てすと", "explanation": "測試"},
+    "GOJUON": [
+        {"japanese": "あいうえお", "explanation": "五十音圖第一行"},
+        {"japanese": "かきくけこ", "explanation": "五十音圖第二行"},
+        {"japanese": "さしすせそ", "explanation": "五十音圖第三行"}
+    ]
+}
+
 @pytest.fixture
 def words_list(test_db):
     """提供 WordsList 實例和測試數據庫集合"""
     with patch('functions.words_list.words_collection', test_db):
-        words_list = WordsList()
-        yield words_list
+        yield WordsList()
+
+def insert_test_word(test_db, word_data):
+    """輔助函數：插入測試單字"""
+    return test_db.insert_one(word_data).inserted_id
 
 def test_add_word(words_list, test_db):
     """測試新增單字功能"""
-    # 新增單字（確保使用有效的日文字符）
-    japanese = "てすと"  # 使用平假名
-    explanation = "測試"
+    word_data = TEST_WORDS["TEST"]
+    word_id = insert_test_word(test_db, word_data)
     
-    # 先插入到數據庫
-    word_id = test_db.insert_one({
-        "japanese": japanese,
-        "explanation": explanation
-    }).inserted_id
-    
-    words_list.add_word(japanese, explanation, word_id)
+    # 執行新增操作
+    words_list.add_word(word_data["japanese"], word_data["explanation"], word_id)
     
     # 驗證界面更新
     assert len(words_list.layout.children) == 1
     word_item = words_list.layout.children[0]
     assert isinstance(word_item, WordItem)
-    assert word_item.word == japanese
-    assert word_item.explanation == explanation
+    assert word_item.word == word_data["japanese"]
+    assert word_item.explanation == word_data["explanation"]
     assert word_item.word_id == word_id
 
 def test_delete_word(words_list, test_db):
     """測試刪除單字功能"""
-    # 先新增一個單字（使用有效的日文字符）
-    word_id = test_db.insert_one({
-        "japanese": "ひらがな",  # 使用平假名
-        "explanation": "平假名"
-    }).inserted_id
-    
+    # 準備測試數據
+    word_id = insert_test_word(test_db, TEST_WORDS["HIRAGANA"])
     words_list.load_words_from_db()
+    
+    # 驗證初始狀態
     assert len(words_list.layout.children) == 1
     
-    # 刪除單字
+    # 執行刪除操作
     word_item = words_list.layout.children[0]
     with patch('kivy.uix.popup.Popup.open'):
         words_list.show_delete_confirmation(word_item)
@@ -53,70 +61,64 @@ def test_delete_word(words_list, test_db):
 
 def test_edit_word(words_list, test_db):
     """測試編輯單字功能"""
-    # 先新增一個單字（使用有效的日文字符）
-    word_id = test_db.insert_one({
-        "japanese": "かんじ",  # 使用平假名
-        "explanation": "漢字"
-    }).inserted_id
-    
+    # 準備測試數據
+    word_id = insert_test_word(test_db, TEST_WORDS["KANJI"])
     words_list.load_words_from_db()
     word_item = words_list.layout.children[0]
     
-    # 編輯單字（確保新的日文也是有效的）
-    new_japanese = "ひらがな"  # 使用平假名
-    new_explanation = "平假名"
+    # 準備新數據
+    new_word_data = TEST_WORDS["HIRAGANA"]
     
-    # 模擬編輯操作
-    with patch.object(word_item, 'word', new_japanese):  # 模擬更新 word 屬性
-        with patch.object(word_item, 'explanation', new_explanation):  # 模擬更新 explanation 屬性
-            words_list.edit_word(word_item, new_japanese, new_explanation)
+    # 執行編輯操作
+    with patch.object(word_item, 'word', new_word_data["japanese"]):
+        with patch.object(word_item, 'explanation', new_word_data["explanation"]):
+            words_list.edit_word(
+                word_item, 
+                new_word_data["japanese"], 
+                new_word_data["explanation"]
+            )
             
             # 驗證數據庫更新
             updated_word = test_db.find_one({"_id": word_id})
-            assert updated_word["japanese"] == new_japanese
-            assert updated_word["explanation"] == new_explanation
+            assert updated_word["japanese"] == new_word_data["japanese"]
+            assert updated_word["explanation"] == new_word_data["explanation"]
 
 def test_search_words(words_list, test_db):
     """測試搜索單字功能"""
-    # 插入測試數據（使用有效的日文字符）
-    test_db.insert_many([
-        {"japanese": "あいうえお", "explanation": "五十音圖第一行"},
-        {"japanese": "かきくけこ", "explanation": "五十音圖第二行"},
-        {"japanese": "さしすせそ", "explanation": "五十音圖第三行"}
-    ])
+    # 準備測試數據
+    test_db.insert_many(TEST_WORDS["GOJUON"])
     
     # 執行搜索
     words_list.search_words("あ")
     
     # 驗證搜索結果
-    assert words_list.search_mode == True
+    assert words_list.search_mode is True
     assert len(words_list.search_results) == 1
     assert len(words_list.layout.children) == 1
     assert words_list.layout.children[0].word == "あいうえお"
 
 def test_pagination(words_list, test_db):
     """測試分頁功能"""
-    # 插入超過一頁的數據（使用有效的日文字符）
+    # 準備測試數據
     test_data = [
         {
-            "japanese": f"ひらがな",  # 不要加數字，保持純日文
+            "japanese": "ひらがな",
             "explanation": f"平假名{i}"
         }
-        for i in range(7)  # 插入7個項目
+        for i in range(7)
     ]
     
-    # 逐個插入以避免批量插入的驗證問題
+    # 插入測試數據
     for data in test_data:
         test_db.insert_one(data)
     
+    # 測試第一頁
     words_list.load_words_from_db()
-    
-    # 驗證第一頁
     assert len(words_list.layout.children) == 5
     assert words_list.current_page == 1
     assert words_list.total_pages == 2
     
-    # 測試翻頁
+    # 測試第二頁
     words_list.current_page = 2
     words_list.load_words_from_db()
-    assert len(words_list.layout.children) == 2  # 第二頁應該有2個項目
+    assert len(words_list.layout.children) == 2
