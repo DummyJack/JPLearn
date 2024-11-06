@@ -7,7 +7,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.core.window import Window
 from kivy.core.text import LabelBase
 from functions.fifty_sounds import FiftySoundsPopup
-from functions.words_list import WordsListPopup
+from ui.words_main import WordsMain
 from kivy.metrics import dp
 
 
@@ -75,8 +75,7 @@ class MainView(FloatLayout):
         popup.open()
 
     def on_words_press(self, instance):
-        # 當"單字"按鈕被點擊時，打開單字列表彈出窗口
-        popup = WordsListPopup()
+        popup = WordsMain()
         popup.open()
 
 
