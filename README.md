@@ -9,7 +9,7 @@ pip install -r requirements.txt
 ## 啟動
 
 ```
-執行 main.py
+執行 run.py
 ```
 
 ## 測試
