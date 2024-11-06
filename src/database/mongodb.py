@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from pymongo import MongoClient
 import logging
+from .validators import WORDS_VALIDATOR
 
 # MongoDB 配置常量
 MONGODB_CONFIG = {
@@ -8,29 +9,6 @@ MONGODB_CONFIG = {
     "TIMEOUT": 5000,
     "DB_NAME": "japanese_db",
     "COLLECTION": "words"
-}
-
-# MongoDB 驗證規則
-MONGODB_VALIDATOR = {
-    "collMod": MONGODB_CONFIG["COLLECTION"],
-    "validator": {
-        "$jsonSchema": {
-            "bsonType": "object",
-            "required": ["japanese"],
-            "properties": {
-                "japanese": {
-                    "bsonType": "string",
-                    "pattern": "^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+$",
-                    "description": "必須是日文（平假名、片假名或漢字）"
-                },
-                "explanation": {
-                    "bsonType": "string",
-                }
-            }
-        }
-    },
-    "validationLevel": "strict",
-    "validationAction": "error"
 }
 
 class MongoDBManager:
@@ -89,7 +67,11 @@ class MongoDBManager:
     
     def _set_validation_rules(self):
         """設置驗證規則"""
-        self.db.command(MONGODB_VALIDATOR)
+        validator_config = {
+            "collMod": MONGODB_CONFIG["COLLECTION"],
+            **WORDS_VALIDATOR
+        }
+        self.db.command(validator_config)
     
     def get_collection(self):
         """獲取集合實例"""
