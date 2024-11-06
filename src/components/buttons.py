@@ -63,7 +63,7 @@ class AddButton(ButtonWithIcon):
             icon="+", 
             size=(dp(40), dp(40)), 
             with_background=True,
-            padding=[0, dp(-10), 0, 0],  # 增加負上邊距，使按鈕更往上移動
+            padding=[0, 0, 0, 0],
             **kwargs
         )
         self.bind(on_press=callback)
@@ -76,7 +76,6 @@ class EditButton(ButtonWithIcon):
             size=(dp(40), dp(40)),
             with_background=False,
             icon_size_ratio=0.8,
-            padding_left=dp(-10),
             **kwargs
         )
         self.bind(on_press=callback)
@@ -89,7 +88,6 @@ class DeleteButton(ButtonWithIcon):
             size=(dp(40), dp(40)),
             with_background=False,
             icon_size_ratio=0.8,
-            padding_left=dp(-10),
             **kwargs
         )
         self.bind(on_press=callback)
@@ -100,12 +98,13 @@ class ButtonWithBackground(Button):
         super().__init__(**kwargs)
         self.background_color = (0, 0, 0, 0)
         with self.canvas.before:
-            Color(0.8, 0.8, 0.8, 1)
+            Color(0.7, 0.7, 0.7, 1)
             self.bg = RoundedRectangle(
                 pos=self.pos,
                 size=self.size,
                 radius=[5]
             )
+        self.color = (0.2, 0.2, 0.2, 1)
         self.bind(pos=self.update_bg, size=self.update_bg)
 
     def update_bg(self, *args):

@@ -3,10 +3,8 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.widget import Widget
 from kivy.metrics import dp
 
-from database.mongodb import words_collection
-from components.inputs import JapaneseTextInput, ExplanationTextInput
-from components.labels import ErrorLabel
-from components.buttons import ButtonWithBackground
+from database import words_collection
+from components import JapaneseTextInput, ExplanationTextInput, ErrorLabel, ButtonWithBackground, CancelButton, ConfirmButton
 
 class WordPopup(Popup):
     """單字彈窗（新增和編輯）"""
@@ -67,22 +65,13 @@ class WordPopup(Popup):
         )
 
         # 根據模式設置按鈕文字
-        action_button = ButtonWithBackground(
+        action_button = ConfirmButton(
             text="新增" if mode == "add" else "修改",
             on_press=self.submit_form,
-            font_name="ChineseFont",
-            font_size=dp(16),
-            size_hint=(None, None),
-            size=(dp(100), dp(40)),
         )
 
-        cancel_button = ButtonWithBackground(
-            text="取消",
+        cancel_button = CancelButton(
             on_press=self.dismiss,
-            font_name="ChineseFont",
-            font_size=dp(16),
-            size_hint=(None, None),
-            size=(dp(100), dp(40)),
         )
 
         button_layout.add_widget(Widget())
