@@ -3,10 +3,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.metrics import dp
 from kivy.uix.anchorlayout import AnchorLayout
 
-from components.pagination import Pagination
-from components.search_bar import SearchBar
-from components.buttons import AddButton
-from components.labels import HeaderLabel
+from components import Pagination, SearchBar, AddButton, HeaderLabel
 from functions.words_manager import WordManager
 from ui.word_popup import WordPopup
 
@@ -84,7 +81,7 @@ class WordsMain(Popup):
         explanation_header = AnchorLayout(
             anchor_x="center",
             anchor_y="center",
-            size_hint_x=0.7
+            size_hint_x=0.9
         )
         explanation_header.add_widget(HeaderLabel(text="解釋"))
         header.add_widget(explanation_header)

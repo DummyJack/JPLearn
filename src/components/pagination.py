@@ -12,6 +12,8 @@ class Pagination(BoxLayout):
         self.orientation = "horizontal"
         self.size_hint_y = None
         self.height = dp(50)
+        self.spacing = dp(5)
+        self.padding = [dp(200), 0, dp(200), 0]
         
         self.current_page = 1
         self.total_pages = 1
@@ -24,7 +26,7 @@ class Pagination(BoxLayout):
         # 上一頁按鈕
         self.prev_btn = Button(
             text="上一頁",
-            size_hint_x=0.2,
+            size_hint_x=0.5,
             font_name="ChineseFont",
             disabled=True
         )
@@ -33,14 +35,15 @@ class Pagination(BoxLayout):
         # 頁碼標籤
         self.page_label = Label(
             text="1/1",
-            size_hint_x=0.6,
-            font_name="ChineseFont"
+            size_hint_x=0.5,
+            font_name="ChineseFont",
+            font_size=dp(20)
         )
         
         # 下一頁按鈕
         self.next_btn = Button(
             text="下一頁",
-            size_hint_x=0.2,
+            size_hint_x=0.5,
             font_name="ChineseFont",
             disabled=True
         )

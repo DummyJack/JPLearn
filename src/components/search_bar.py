@@ -16,7 +16,7 @@ class SearchBar(BoxLayout):
         self.orientation = "horizontal"
         self.size_hint_y = None
         self.height = dp(50)
-        self.padding = [dp(10), dp(5), dp(10), dp(5)]
+        self.padding = [dp(10), dp(10), dp(10), dp(5)]
         self.spacing = dp(10)
         self.search_callback = search_callback
 
@@ -58,7 +58,7 @@ class SearchBar(BoxLayout):
             font_name="ChineseFont",
             font_size=dp(18),
             background_color=(0, 0, 0, 0),  # 透明背景
-            padding=[0, dp(14), dp(10), dp(10)],
+            padding=[0, dp(16), dp(10), dp(8)],  # [左, 上, 右, 下]
             cursor_color=(0, 0, 0, 1),
             foreground_color=(0, 0, 0, 1),
             hint_text_color=(0.5, 0.5, 0.5, 1),
@@ -86,4 +86,4 @@ class SearchBar(BoxLayout):
 
     def _maintain_text_pos(self, instance, value):
         """保持文字位置固定"""
-        instance.padding = [0, dp(14), dp(10), dp(10)]  # 重新設置padding確保位置不變
+        instance.padding = [0, dp(16), dp(10), dp(8)]  # 重新設置padding確保位置不變
