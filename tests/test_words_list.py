@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import Mock, patch
-from functions.words_list import WordsList, WordItem
+from ..src.functions.words_manager import WordManager, WordItem
 
 # 測試數據常量
 TEST_WORDS = {
@@ -16,9 +16,9 @@ TEST_WORDS = {
 
 @pytest.fixture
 def words_list(test_db):
-    """提供 WordsList 實例和測試數據庫集合"""
+    """提供 WordManager 實例和測試數據庫集合"""
     with patch('functions.words_list.words_collection', test_db):
-        yield WordsList()
+        yield WordManager()
 
 def insert_test_word(test_db, word_data):
     """輔助函數：插入測試單字"""
