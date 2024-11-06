@@ -5,7 +5,9 @@ from .buttons import (
     DeleteButton,
     ButtonWithBackground,
     ConfirmButton,
-    CancelButton
+    CancelButton,
+    SoundButton,
+    SongButton
 )
 
 from .labels import (
@@ -36,6 +38,8 @@ __all__ = [
     'ButtonWithBackground',
     'ConfirmButton',
     'CancelButton',
+    'SoundButton',
+    'SongButton',
     
     # labels
     'BaseLabel',
