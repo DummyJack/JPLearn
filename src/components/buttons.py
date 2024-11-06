@@ -133,3 +133,33 @@ class CancelButton(ButtonWithBackground):
             size=(dp(100), dp(50)),
             **kwargs
         )
+
+class SoundButton(Button):
+    """五十音按鈕"""
+    def __init__(self, japanese, romaji, size=dp(70), **kwargs):
+        super().__init__(
+            text=f"[size=30]{japanese}[/size]\n[size=24]{romaji}[/size]",
+            markup=True,
+            font_name="ChineseFont",
+            background_color=(0.5, 0.7, 1, 1),  # COLORS["INITIAL"]
+            size_hint=(None, None),
+            size=(size, size),
+            halign="center",
+            valign="middle",
+            text_size=(size, size),
+            **kwargs
+        )
+
+class SongButton(Button):
+    """五十音歌曲按鈕"""
+    def __init__(self, size=dp(70), **kwargs):
+        super().__init__(
+            text="一首歌記住五十音",
+            font_name="ChineseFont",
+            background_color=(1, 0.7, 0.7, 1),  # COLORS["SONG_INITIAL"]
+            size_hint=(None, None),
+            size=(size * 3, size),
+            halign="center",
+            valign="middle",
+            **kwargs
+        )
