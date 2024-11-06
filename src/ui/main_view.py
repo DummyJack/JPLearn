@@ -3,7 +3,8 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.metrics import dp
 
-from ui import WordsMain, FiftySoundsMain
+from ui.words_main import WordsMain
+from ui.fifty_sounds_main import FiftySoundsMain
 
 class MainView(FloatLayout):
     def __init__(self, **kwargs):

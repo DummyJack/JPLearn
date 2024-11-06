@@ -4,7 +4,7 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.label import Label
 from kivy.metrics import dp
 
-from functions import FiftySoundsGrid
+from ui.fifty_sounds_grid import FiftySoundsGrid
 
 # 常量定義
 COLORS = {
