@@ -1,6 +1,5 @@
-from .fifty_sounds import FiftySoundsGrid, FiftySoundsPopup
+from .fifty_sounds_manager import FiftySoundsGrid
 
 __all__ = [
-    'FiftySoundsGrid',
-    'FiftySoundsPopup'
+    'FiftySoundsGrid'
 ]
