@@ -12,6 +12,12 @@ pip install -r requirements.txt
 執行 run.py
 ```
 
+## 插入測試資料
+
+```bash
+python src/scripts/insert_sample_data.py
+```
+
 ## 測試
 
 ### 安裝測試套件
