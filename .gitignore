@@ -1,9 +1,11 @@
-functions/__pycache__/
-tests/__pycache__/
+# ----------Enviroment----------
+__pycache__/
+.pytest_cache/
+.vscode/
+.DS_Store
+
+# ------------tests------------
 .coverage
 htmlcov/
 report.html
 assets/
-.DS_Store
-.vscode/
-.pytest_cache/
