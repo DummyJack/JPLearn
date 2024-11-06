@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import Mock, patch
 from kivy.uix.button import Button
-from ..src.functions.fifty_sounds import FiftySoundsGrid
+from ..src.functions.fifty_sounds_manager import FiftySoundsGrid
 
 # 測試數據常量
 COLORS = {

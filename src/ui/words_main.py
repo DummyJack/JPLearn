@@ -71,7 +71,7 @@ class WordsMain(Popup):
         word_header = AnchorLayout(
             anchor_x="center",
             anchor_y="center",
-            size_hint_x=0.3,
+            size_hint_x=0.8,
             padding=[0, 0, dp(20), 0]
         )
         word_header.add_widget(HeaderLabel(text="單字"))
@@ -81,7 +81,7 @@ class WordsMain(Popup):
         explanation_header = AnchorLayout(
             anchor_x="center",
             anchor_y="center",
-            size_hint_x=0.9
+            size_hint_x=1.8
         )
         explanation_header.add_widget(HeaderLabel(text="解釋"))
         header.add_widget(explanation_header)
