@@ -8,17 +8,6 @@ from components import SoundButton, SongButton
 from functions import FiftySoundsManager
 
 # 常量定義
-COLORS = {
-    "INITIAL": (0.5, 0.7, 1, 1),
-}
-
-POPUP_CONFIG = {
-    "SIZE": (dp(800), dp(600)),
-    "GRID_SIZE": (dp(720), dp(480)),
-    "TITLE_HEIGHT": dp(50),
-    "PADDING": (dp(20), dp(10), dp(40), dp(20))
-}
-
 BUTTON_CONFIG = {
     "SIZE": dp(70),
     "SPACING": dp(5),
@@ -120,8 +109,8 @@ class FiftySoundsMain(Popup):
         self.title = ""
         self.separator_height = 0
         self.size_hint = (None, None)
-        self.size = POPUP_CONFIG["SIZE"]
-        self.background_color = COLORS["INITIAL"]
+        self.size = (dp(800), dp(600))
+        self.background_color = (0.5, 0.7, 1, 1)  # 淺藍色 - 彈出窗口背景顏色
 
     def _create_content(self):
         """創建彈出窗口內容"""
@@ -136,16 +125,16 @@ class FiftySoundsMain(Popup):
             anchor_x='center',
             anchor_y='center',
             size_hint_y=None,
-            height=POPUP_CONFIG["TITLE_HEIGHT"]
+            height=dp(50)
         )
         
         title = Label(
             text="五十音",
             font_name="ChineseFont",
             font_size=dp(36),
-            color=(1, 1, 1, 1),
+            color=(1, 1, 1, 1),  # 純白色 - 標題文字顏色
             size_hint=(None, None),
-            size=(dp(200), POPUP_CONFIG["TITLE_HEIGHT"])
+            size=(dp(200), dp(50))
         )
         
         title_layout.add_widget(title)
@@ -157,9 +146,9 @@ class FiftySoundsMain(Popup):
         
         grid_container = BoxLayout(
             orientation="vertical",
-            padding=POPUP_CONFIG["PADDING"],
+            padding=(dp(20), dp(10), dp(40), dp(20)),
             size_hint=(None, None),
-            size=POPUP_CONFIG["GRID_SIZE"]
+            size=(dp(720), dp(480))
         )
         
         self.grid = FiftySoundsGrid()

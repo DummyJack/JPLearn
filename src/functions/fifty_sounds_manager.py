@@ -4,13 +4,6 @@ from kivy.core.audio import SoundLoader
 from kivy.clock import Clock
 from components.buttons import SoundButton, SongButton
 
-# 常量定義
-COLORS = {
-    "INITIAL": (0.5, 0.7, 1, 1),
-    "PLAYING": (1, 0.5, 0.5, 1),
-    "SONG_INITIAL": (1, 0.7, 0.7, 1)
-}
-
 class FiftySoundsManager:
     """五十音聲音管理器"""
     def __init__(self):
@@ -42,7 +35,7 @@ class FiftySoundsManager:
             audio.play()
             self.current_audio = audio
             self.current_button = instance
-            instance.background_color = COLORS["PLAYING"]
+            instance.background_color = (1, 0.5, 0.5, 1) # 粉紅色 - 播放時的按鈕顏色
             # print(f"播放音頻: {audio_name}")
             self.audio_event = Clock.schedule_once(self._on_audio_finish, audio.length)
         else:
@@ -67,9 +60,9 @@ class FiftySoundsManager:
 
     def _reset_button_color(self, button):
         if isinstance(button, SongButton):
-            button.background_color = COLORS["SONG_INITIAL"]
+            button.background_color = (1, 0.7, 0.7, 1) # 淺粉紅色 - 歌曲按鈕的默認顏色
         else:
-            button.background_color = COLORS["INITIAL"]
+            button.background_color = (0.5, 0.7, 1, 1) # 淺藍色 - 一般按鈕的默認顏色
 
     def _reset_other_buttons(self, current_instance):
         for child in current_instance.parent.parent.children:
