@@ -169,3 +169,41 @@ class SongButton(Button):
             valign="middle",
             **kwargs
         )
+
+# ----------main_view---------
+
+class MainButton(Button):
+    """主視圖按鈕基類"""
+    def __init__(self, text, pos_x, background_color, **kwargs):
+        super().__init__(
+            text=text,
+            font_size=dp(36),
+            size_hint=(None, None),
+            size=(dp(250), dp(80)),
+            background_color=background_color,
+            pos_hint={"center_x": pos_x, "center_y": 0.5},
+            font_name="ChineseFont",
+            **kwargs
+        )
+
+class FiftySoundsButton(MainButton):
+    """五十音按鈕"""
+    def __init__(self, callback, **kwargs):
+        super().__init__(
+            text="五十音",
+            pos_x=0.3,
+            background_color=(0, 0, 1, 1),  # 藍色背景
+            **kwargs
+        )
+        self.bind(on_press=callback)
+
+class WordsButton(MainButton):
+    """單字按鈕"""
+    def __init__(self, callback, **kwargs):
+        super().__init__(
+            text="單字",
+            pos_x=0.7,
+            background_color=(0, 1, 0, 1),  # 綠色背景
+            **kwargs
+        )
+        self.bind(on_press=callback)

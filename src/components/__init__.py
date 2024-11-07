@@ -7,7 +7,10 @@ from .buttons import (
     ConfirmButton,
     CancelButton,
     SoundButton,
-    SongButton
+    SongButton,
+    MainButton,
+    FiftySoundsButton,
+    WordsButton
 )
 
 from .labels import (
@@ -16,7 +19,9 @@ from .labels import (
     WordLabel,
     ExplanationLabel,
     HeaderLabel,
-    ConfirmLabel
+    ConfirmLabel,
+    TitleLabel,
+    CreatorLabel
 )
 
 from .inputs import (
@@ -40,6 +45,9 @@ __all__ = [
     'CancelButton',
     'SoundButton',
     'SongButton',
+    'MainButton',
+    'FiftySoundsButton',
+    'WordsButton',
     
     # labels
     'BaseLabel',
@@ -48,6 +56,8 @@ __all__ = [
     'ExplanationLabel',
     'HeaderLabel',
     'ConfirmLabel',
+    'TitleLabel',
+    'CreatorLabel',
     
     # inputs
     'BaseTextInput',
