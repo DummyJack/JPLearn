@@ -1,6 +1,9 @@
 from kivy.uix.textinput import TextInput
 from kivy.metrics import dp
 
+
+# ----------通用---------
+
 class BaseTextInput(TextInput):
     """基礎輸入框"""
     def __init__(self, **kwargs):
@@ -11,6 +14,8 @@ class BaseTextInput(TextInput):
             padding=[dp(10), dp(10), dp(10), dp(10)],
             **kwargs
         )
+
+# ----------words_popup---------
 
 class JapaneseTextInput(BaseTextInput):
     """日文輸入框"""

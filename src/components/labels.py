@@ -1,6 +1,7 @@
 from kivy.uix.label import Label
 from kivy.metrics import dp
 
+# ----------通用---------
 class BaseLabel(Label):
     """基礎標籤"""
     def __init__(self, **kwargs):
@@ -8,6 +9,8 @@ class BaseLabel(Label):
             font_name="ChineseFont",
             **kwargs
         )
+        
+# ----------words related---------
 
 class ErrorLabel(BaseLabel):
     """錯誤提示標籤"""

@@ -7,6 +7,8 @@ from kivy.uix.image import Image
 from kivy.metrics import dp
 from kivy.graphics import Color, RoundedRectangle
 
+# ----------通用---------
+
 class ButtonWithIcon(ButtonBehavior, BoxLayout):
     """帶圖標的按鈕基類"""
     def __init__(self, icon, size, with_background=True, icon_size_ratio=0.6, padding_left=0, **kwargs):
@@ -56,6 +58,27 @@ class ButtonWithIcon(ButtonBehavior, BoxLayout):
             self.bg.pos = self.pos
             self.bg.size = self.size
 
+class ButtonWithBackground(Button):
+    """帶背景的基礎按鈕"""
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.background_color = (0, 0, 0, 0)
+        with self.canvas.before:
+            Color(0.7, 0.7, 0.7, 1)
+            self.bg = RoundedRectangle(
+                pos=self.pos,
+                size=self.size,
+                radius=[5]
+            )
+        self.color = (0.2, 0.2, 0.2, 1)
+        self.bind(pos=self.update_bg, size=self.update_bg)
+
+    def update_bg(self, *args):
+        self.bg.pos = self.pos
+        self.bg.size = self.size
+
+# ----------words_popup---------
+
 class AddButton(ButtonWithIcon):
     """新增按鈕"""
     def __init__(self, callback, **kwargs):
@@ -92,25 +115,6 @@ class DeleteButton(ButtonWithIcon):
         )
         self.bind(on_press=callback)
 
-class ButtonWithBackground(Button):
-    """帶背景的基礎按鈕"""
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.background_color = (0, 0, 0, 0)
-        with self.canvas.before:
-            Color(0.7, 0.7, 0.7, 1)
-            self.bg = RoundedRectangle(
-                pos=self.pos,
-                size=self.size,
-                radius=[5]
-            )
-        self.color = (0.2, 0.2, 0.2, 1)
-        self.bind(pos=self.update_bg, size=self.update_bg)
-
-    def update_bg(self, *args):
-        self.bg.pos = self.pos
-        self.bg.size = self.size
-
 class ConfirmButton(ButtonWithBackground):
     """確認按鈕"""
     def __init__(self, **kwargs):
@@ -133,6 +137,8 @@ class CancelButton(ButtonWithBackground):
             size=(dp(100), dp(50)),
             **kwargs
         )
+
+# ----------fifty_sounds---------
 
 class SoundButton(Button):
     """五十音按鈕"""
