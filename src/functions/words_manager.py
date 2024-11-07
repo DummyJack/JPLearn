@@ -14,16 +14,6 @@ from math import ceil
 from database import words_collection
 from components import ConfirmButton, CancelButton, ConfirmLabel, WordItem
 
-# UI 配置常量
-UI_CONFIG = {
-    "BUTTON_SIZE": dp(100),
-    "BUTTON_HEIGHT": dp(50),
-    "SPACING": dp(20),
-    "PADDING": dp(20),
-    "FONT_SIZE": dp(18),
-    "TITLE_FONT_SIZE": dp(24)
-}
-
 class WordManager(ScrollView):
     """單字管理器：負責單字的增刪改查和分頁顯示"""
     def __init__(self, **kwargs):

@@ -2,7 +2,6 @@ from kivy.uix.textinput import TextInput
 from kivy.metrics import dp
 from utils import TextValidator, JapaneseValidator
 
-
 # ----------通用---------
 
 class BaseTextInput(TextInput):
