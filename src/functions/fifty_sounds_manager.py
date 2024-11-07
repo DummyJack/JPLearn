@@ -34,7 +34,7 @@ class FiftySoundsManager:
                 self.audio_event.cancel()
             if self.current_button == instance:
                 self._reset_audio_state()
-                print(f"停止播放音頻: {audio_name}")
+                # print(f"停止播放音頻: {audio_name}")
                 return
 
         audio = SoundLoader.load(audio_file)
@@ -43,10 +43,11 @@ class FiftySoundsManager:
             self.current_audio = audio
             self.current_button = instance
             instance.background_color = COLORS["PLAYING"]
-            print(f"播放音頻: {audio_name}")
+            # print(f"播放音頻: {audio_name}")
             self.audio_event = Clock.schedule_once(self._on_audio_finish, audio.length)
         else:
-            print(f"未找到音頻文件: {audio_file}")
+            # print(f"未找到音頻文件: {audio_file}")
+            pass
 
         self._reset_other_buttons(instance)
 

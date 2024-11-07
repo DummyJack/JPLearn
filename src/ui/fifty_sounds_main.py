@@ -4,7 +4,7 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.label import Label
 from kivy.metrics import dp
 
-from components.buttons import SoundButton, SongButton
+from components import SoundButton, SongButton
 from functions import FiftySoundsManager
 
 # 常量定義
