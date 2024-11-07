@@ -147,7 +147,7 @@ class SoundButton(Button):
             text=f"[size=30]{japanese}[/size]\n[size=24]{romaji}[/size]",
             markup=True,
             font_name="ChineseFont",
-            background_color=(0.5, 0.7, 1, 1),  # COLORS["INITIAL"]
+            background_color=(0.5, 0.7, 1, 1),
             size_hint=(None, None),
             size=(size, size),
             halign="center",

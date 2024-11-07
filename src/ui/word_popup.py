@@ -4,7 +4,7 @@ from kivy.uix.widget import Widget
 from kivy.metrics import dp
 
 from database import words_collection
-from components import JapaneseTextInput, ExplanationTextInput, ErrorLabel, ButtonWithBackground, CancelButton, ConfirmButton
+from components import JapaneseTextInput, ExplanationTextInput, ErrorLabel, CancelButton, ConfirmButton
 
 class WordPopup(Popup):
     """單字彈窗（新增和編輯）"""
