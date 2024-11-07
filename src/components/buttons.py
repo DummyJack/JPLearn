@@ -19,7 +19,7 @@ class ButtonWithIcon(ButtonBehavior, BoxLayout):
 
         if with_background:
             with self.canvas.before:
-                Color(0.8, 0.8, 0.8, 1)
+                Color(0.8, 0.8, 0.8, 1)  # 淺灰色背景
                 self.bg = RoundedRectangle(
                     pos=self.pos,
                     size=self.size,
@@ -38,7 +38,7 @@ class ButtonWithIcon(ButtonBehavior, BoxLayout):
             add_label = Label(
                 text="+",
                 font_size=dp(30),
-                color=(0, 0, 0, 1),
+                color=(0, 0, 0, 1),  # 黑色文字
                 bold=True
             )
             icon_layout.add_widget(add_label)
@@ -62,15 +62,15 @@ class ButtonWithBackground(Button):
     """帶背景的基礎按鈕"""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.background_color = (0, 0, 0, 0)
+        self.background_color = (0, 0, 0, 0)  # 透明背景
         with self.canvas.before:
-            Color(0.7, 0.7, 0.7, 1)
+            Color(0.7, 0.7, 0.7, 1)  # 中灰色背景
             self.bg = RoundedRectangle(
                 pos=self.pos,
                 size=self.size,
                 radius=[5]
             )
-        self.color = (0.2, 0.2, 0.2, 1)
+        self.color = (0.2, 0.2, 0.2, 1)  # 深灰色文字
         self.bind(pos=self.update_bg, size=self.update_bg)
 
     def update_bg(self, *args):
@@ -147,7 +147,7 @@ class SoundButton(Button):
             text=f"[size=30]{japanese}[/size]\n[size=24]{romaji}[/size]",
             markup=True,
             font_name="ChineseFont",
-            background_color=(0.5, 0.7, 1, 1),
+            background_color=(0.5, 0.7, 1, 1),  # 淺藍色背景
             size_hint=(None, None),
             size=(size, size),
             halign="center",
@@ -162,7 +162,7 @@ class SongButton(Button):
         super().__init__(
             text="一首歌記住五十音",
             font_name="ChineseFont",
-            background_color=(1, 0.7, 0.7, 1),  # COLORS["SONG_INITIAL"]
+            background_color=(1, 0.7, 0.7, 1),  # 淺粉紅色背景
             size_hint=(None, None),
             size=(size * 3, size),
             halign="center",

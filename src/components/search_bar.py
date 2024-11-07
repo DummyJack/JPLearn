@@ -28,7 +28,7 @@ class SearchBar(BoxLayout):
 
         # 搜索框背景
         with search_container.canvas.before:
-            Color(0.95, 0.95, 0.95, 1)  # 淺灰色背景
+            Color(0.95, 0.95, 0.95, 1)  # 淺灰色背景 - 搜索框背景顏色
             self.bg = RoundedRectangle(
                 pos=search_container.pos,
                 size=search_container.size,
@@ -57,11 +57,11 @@ class SearchBar(BoxLayout):
             hint_text="搜索單字...",
             font_name="ChineseFont",
             font_size=dp(18),
-            background_color=(0, 0, 0, 0),
+            background_color=(0, 0, 0, 0),  # 透明背景
             padding=[0, dp(5), dp(10), dp(5)],
-            cursor_color=(0, 0, 0, 1),
-            foreground_color=(0, 0, 0, 1),
-            hint_text_color=(0.5, 0.5, 0.5, 1),
+            cursor_color=(0, 0, 0, 1),  # 黑色光標
+            foreground_color=(0, 0, 0, 1),  # 黑色文字
+            hint_text_color=(0.5, 0.5, 0.5, 1),  # 灰色提示文字
             size_hint_y=None,
             height=dp(37),
             halign='left',
