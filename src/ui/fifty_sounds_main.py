@@ -7,38 +7,39 @@ from kivy.metrics import dp
 from components import SoundButton, SongButton
 from functions import FiftySoundsManager
 
-# 常量定義
+# 常量定義：用於統一管理按鈕的尺寸和佈局
 BUTTON_CONFIG = {
-    "SIZE": dp(70),
-    "SPACING": dp(5),
-    "BUTTONS_PER_ROW": 9
+    "SIZE": dp(70),                # 按鈕大小
+    "SPACING": dp(5),              # 按鈕間距
+    "BUTTONS_PER_ROW": 9           # 每行按鈕數量
 }
 
 class FiftySoundsGrid(BoxLayout):
-    """五十音格子UI"""
+    """五十音格子UI：顯示五十音按鈕網格和播放控制"""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.sound_manager = FiftySoundsManager()
-        self._init_layout()
-        self._create_sound_buttons()
+        self.sound_manager = FiftySoundsManager()  # 音頻管理器
+        self._init_layout()                        # 初始化佈局
+        self._create_sound_buttons()               # 創建按鈕
 
     def _init_layout(self):
         """初始化佈局設置"""
-        self.orientation = "vertical"
-        self.spacing = BUTTON_CONFIG["SPACING"]
-        self.padding = BUTTON_CONFIG["SPACING"]
+        self.orientation = "vertical"              # 垂直佈局
+        self.spacing = BUTTON_CONFIG["SPACING"]    # 設置間距
+        self.padding = BUTTON_CONFIG["SPACING"]    # 設置內邊距
         
-        # 定義五十音數據
+        # 定義五十音數據：格式為"平假名羅馬音"
         self.sounds = "あa|いi|うu|えe|おo|かka|きki|くku|けke|こko|さsa|しshi|すsu|せse|そso|たta|ちchi|つtsu|てte|とto|なna|にni|ぬnu|ねne|のno|はha|ひhi|ふfu|へhe|ほho|まma|みmi|むmu|めme|もmo|やya|ゆyu|よyo|らra|りri|るru|れre|ろro|わwa|をo|んn".split("|")
 
     def _create_sound_buttons(self):
-        """創建五十音按鈕"""
-        self.clear_widgets()
-        self._create_main_grid()
-        self._create_last_row()
+        """創建五十音按鈕網格"""
+        self.clear_widgets()                       # 清空現有部件
+        self._create_main_grid()                  # 創建主網格
+        self._create_last_row()                   # 創建最後一行
 
     def _create_main_grid(self):
-        """創建主要的五十音格子"""
+        """創建主要的五十音格子（除最後一行外）"""
+        # 每9個音節一行
         for i in range(0, len(self.sounds) - 1, BUTTON_CONFIG["BUTTONS_PER_ROW"]):
             row = self._create_row()
             for j in range(BUTTON_CONFIG["BUTTONS_PER_ROW"]):
@@ -57,7 +58,7 @@ class FiftySoundsGrid(BoxLayout):
         n_btn = self._create_sound_button(n_sound)
         row.add_widget(n_btn)
         
-        # 添加間隔
+        # 添加間隔（用於平衡佈局）
         spacer = BoxLayout(
             size_hint_x=None, 
             width=BUTTON_CONFIG["SIZE"] * 5 + BUTTON_CONFIG["SPACING"] * 4
@@ -80,43 +81,43 @@ class FiftySoundsGrid(BoxLayout):
         )
 
     def _create_sound_button(self, sound):
-        """創建音節按鈕"""
-        japanese, romaji = sound[0], sound[1:]
+        """創建音節按鈕：包含平假名和羅馬音"""
+        japanese, romaji = sound[0], sound[1:]     # 分離平假名和羅馬音
         btn = SoundButton(
             japanese=japanese,
             romaji=romaji,
             size=BUTTON_CONFIG["SIZE"]
         )
-        btn.bind(on_press=self.sound_manager.play_sound)
+        btn.bind(on_press=self.sound_manager.play_sound)  # 綁定播放事件
         return btn
 
     def _create_song_button(self):
-        """創建歌曲按鈕"""
+        """創建歌曲按鈕：用於播放五十音之歌"""
         btn = SongButton(size=BUTTON_CONFIG["SIZE"])
-        btn.bind(on_press=self.sound_manager.play_song)
+        btn.bind(on_press=self.sound_manager.play_song)   # 綁定播放事件
         return btn
 
 class FiftySoundsMain(Popup):
-    """五十音彈出窗口"""
+    """五十音彈出窗口：主要容器"""
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._init_popup()
-        self._create_content()
+        self._init_popup()          # 初始化彈窗設置
+        self._create_content()      # 創建內容
 
     def _init_popup(self):
         """初始化彈出窗口設置"""
-        self.title = ""
-        self.separator_height = 0
+        self.title = ""             # 無標題
+        self.separator_height = 0   # 無分隔線
         self.size_hint = (None, None)
-        self.size = (dp(800), dp(600))
-        self.background_color = (0.5, 0.7, 1, 1)  # 淺藍色 - 彈出窗口背景顏色
+        self.size = (dp(800), dp(600))  # 固定大小
+        self.background_color = (0.5, 0.7, 1, 1)  # 淺藍色背景
 
     def _create_content(self):
         """創建彈出窗口內容"""
         content = BoxLayout(orientation="vertical", spacing=dp(20))
-        content.add_widget(self._create_title())
-        content.add_widget(self._create_grid())
+        content.add_widget(self._create_title())   # 添加標題
+        content.add_widget(self._create_grid())    # 添加五十音格子
         self.content = content
 
     def _create_title(self):
@@ -132,7 +133,7 @@ class FiftySoundsMain(Popup):
             text="五十音",
             font_name="ChineseFont",
             font_size=dp(36),
-            color=(1, 1, 1, 1),  # 純白色 - 標題文字顏色
+            color=(1, 1, 1, 1),     # 純白色文字
             size_hint=(None, None),
             size=(dp(200), dp(50))
         )
@@ -146,9 +147,9 @@ class FiftySoundsMain(Popup):
         
         grid_container = BoxLayout(
             orientation="vertical",
-            padding=(dp(20), dp(10), dp(40), dp(20)),
+            padding=(dp(20), dp(10), dp(40), dp(20)),  # 左上右下內邊距
             size_hint=(None, None),
-            size=(dp(720), dp(480))
+            size=(dp(720), dp(480))                    # 固定大小
         )
         
         self.grid = FiftySoundsGrid()
