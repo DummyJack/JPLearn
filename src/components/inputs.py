@@ -1,5 +1,6 @@
 from kivy.uix.textinput import TextInput
 from kivy.metrics import dp
+from utils import TextValidator, JapaneseValidator
 
 
 # ----------通用---------
@@ -15,12 +16,11 @@ class BaseTextInput(TextInput):
             **kwargs
         )
 
-# ----------words_popup---------
-
-class JapaneseTextInput(BaseTextInput):
-    """日文輸入框"""
-    def __init__(self, **kwargs):
+class ValidatedTextInput(BaseTextInput):
+    """帶驗證的輸入框基類"""
+    def __init__(self, validator: TextValidator = None, **kwargs):
         super().__init__(**kwargs)
+        self.validator = validator
         self.error_label = None
 
     def bind_error_label(self, error_label):
@@ -30,29 +30,32 @@ class JapaneseTextInput(BaseTextInput):
 
     def on_text_validate(self, instance, value):
         """驗證輸入文字"""
-        if not value.strip():
-            if self.error_label:
-                self.error_label.text = "必須輸入單字"
-            return False
-        
-        if not all(self._is_japanese_char(c) for c in value if c.strip()):
-            if self.error_label:
-                self.error_label.text = "請只輸入日文"
-            return False
+        if not self.validator:
+            return True
             
-        if self.error_label:
+        is_valid, error_message = self.validator.validate(value)
+        if not is_valid and self.error_label:
+            self.error_label.text = error_message
+        elif self.error_label:
             self.error_label.text = ""
-        return True
+        return is_valid
 
     def insert_text(self, substring, from_undo=False):
-        if not all(self._is_japanese_char(c) for c in substring if c.strip()):
+        """輸入時驗證"""
+        if self.validator and not self.validator.validate_char(substring):
             return
         return super().insert_text(substring, from_undo=from_undo)
-    
-    def _is_japanese_char(self, char):
-        """檢查是否為日文字符"""
-        return "\u3040" <= char <= "\u30ff" or "\u4e00" <= char <= "\u9fff"
 
-class ExplanationTextInput(BaseTextInput):
+# ----------words_popup---------
+
+class JapaneseTextInput(ValidatedTextInput):
+    """日文輸入框"""
+    def __init__(self, **kwargs):
+        super().__init__(
+            validator=JapaneseValidator(),
+            **kwargs
+        )
+
+class ExplanationTextInput(ValidatedTextInput):
     """解釋輸入框"""
     pass
