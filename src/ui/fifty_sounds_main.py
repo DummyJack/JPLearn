@@ -104,6 +104,8 @@ class FiftySoundsMain(Popup):
         super().__init__(**kwargs)
         self._init_popup()          # 初始化彈窗設置
         self._create_content()      # 創建內容
+        # 綁定關閉事件
+        self.bind(on_dismiss=self._cleanup)
 
     def _init_popup(self):
         """初始化彈出窗口設置"""
@@ -157,3 +159,12 @@ class FiftySoundsMain(Popup):
         
         anchor_layout.add_widget(grid_container)
         return anchor_layout
+
+    def _cleanup(self, instance):
+        """
+        清理音頻資源：當彈窗關閉時自動停止播放
+        Args:
+            instance: 彈窗實例
+        """
+        if hasattr(self, 'grid') and self.grid:
+            self.grid.sound_manager._reset_audio_state()
