@@ -57,15 +57,18 @@ class SearchBar(BoxLayout):
             hint_text="搜索單字...",
             font_name="ChineseFont",
             font_size=dp(18),
-            background_color=(0, 0, 0, 0),  # 透明背景
-            padding=[0, dp(16), dp(10), dp(8)],  # [左, 上, 右, 下]
+            background_color=(0, 0, 0, 0),
+            padding=[0, dp(5), dp(10), dp(5)],
             cursor_color=(0, 0, 0, 1),
             foreground_color=(0, 0, 0, 1),
             hint_text_color=(0.5, 0.5, 0.5, 1),
-            size_hint_y=None,  # 禁用垂直大小提示
-            height=dp(50),    # 固定高度
-            halign='left',    # 水平左對齊
+            size_hint_y=None,
+            height=dp(37),
+            halign='left',
         )
+
+        # 添加文字變化事件綁定
+        self.search_input.bind(text=self._on_text_change)
 
         # 綁定大小變化事件
         self.search_input.bind(size=self._maintain_text_pos)
@@ -86,4 +89,9 @@ class SearchBar(BoxLayout):
 
     def _maintain_text_pos(self, instance, value):
         """保持文字位置固定"""
-        instance.padding = [0, dp(16), dp(10), dp(8)]  # 重新設置padding確保位置不變
+        instance.padding = [0, dp(5), dp(10), dp(5)]  # 同步更新padding值
+
+    def _on_text_change(self, instance, value):
+        """當輸入框文字變化時執行搜索"""
+        if self.search_callback:
+            self.search_callback(value)
