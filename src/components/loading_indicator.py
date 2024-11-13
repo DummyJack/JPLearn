@@ -2,7 +2,6 @@ from kivy.uix.label import Label
 from kivy.animation import Animation
 from kivy.metrics import dp
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.widget import Widget
 
 class LoadingIndicator(BoxLayout):
     def __init__(self, **kwargs):

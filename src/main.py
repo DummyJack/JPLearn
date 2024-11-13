@@ -13,7 +13,6 @@ class JapaneseLearnApp(App):
             name="ChineseFont",
             fn_regular="resources/fonts/NotoSansTC-VariableFont_wght.ttf",
         )
-        Window.size = (1080, 720)  # 設置固定視窗大小
         Window.clearcolor = (0.94, 0.97, 1, 1)  # 設置窗口背景顏色為淺藍色
         return MainView()
 
