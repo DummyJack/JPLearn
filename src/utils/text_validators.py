@@ -37,11 +37,11 @@ class JapaneseValidator(TextValidator):
         """
         # 檢查是否為空
         if not text.strip():
-            return False, "必須輸入單字"
+            return False, "不可空白"
         
         # 檢查是否全部為日文字符
         if not all(self._is_japanese_char(c) for c in text if c.strip()):
-            return False, "請只輸入日文"
+            return False, "請只輸入日文（平假名、片假名或漢字）"
             
         return True, None
 
