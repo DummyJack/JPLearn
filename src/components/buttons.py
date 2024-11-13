@@ -118,23 +118,23 @@ class DeleteButton(ButtonWithIcon):
 class ConfirmButton(ButtonWithBackground):
     """確認按鈕"""
     def __init__(self, **kwargs):
+        size = kwargs.pop('size', (dp(100), dp(50)))
         super().__init__(
             font_name="ChineseFont",
             font_size=dp(18),
-            size_hint=(None, None),
-            size=(dp(100), dp(50)),
+            size=size,
             **kwargs
         )
 
 class CancelButton(ButtonWithBackground):
     """取消按鈕"""
     def __init__(self, **kwargs):
+        size = kwargs.pop('size', (dp(100), dp(50)))
         super().__init__(
             text="取消",
             font_name="ChineseFont",
             font_size=dp(18),
-            size_hint=(None, None),
-            size=(dp(100), dp(50)),
+            size=size,
             **kwargs
         )
 
