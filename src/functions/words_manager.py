@@ -86,7 +86,7 @@ class WordManager(ScrollView):
             self.loading.start()
             self.layout.add_widget(self.loading)
             if TEST_MODE:
-                # 測試模式：延遲1秒加載數據
+                # 測試模式：延遲 3 秒加載數據
                 Clock.schedule_once(lambda dt: self._load_data(), 3)
                 return
         
