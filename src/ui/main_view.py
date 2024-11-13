@@ -2,7 +2,8 @@ from kivy.uix.floatlayout import FloatLayout
 
 from ui.words_main import WordsMain
 from ui.fifty_sounds_main import FiftySoundsMain
-from components import FiftySoundsButton, WordsButton, TitleLabel, CreatorLabel
+from components import FiftySoundsButton, WordsButton, TitleLabel, CreatorLabel, HelpButton
+from ui.help_popup import HelpPopup
 
 class MainView(FloatLayout):
     """主視圖：應用程序的主界面，包含標題、功能按鈕和製作人信息"""
@@ -24,6 +25,13 @@ class MainView(FloatLayout):
         # 添加製作人信息
         self.add_widget(CreatorLabel())  # 底部的製作人信息
 
+        # 添加幫助按鈕
+        help_button = HelpButton(
+            callback=self.show_help,
+            pos_hint={'right': 0.98, 'top': 0.98}  # 調整位置到右上角
+        )
+        self.add_widget(help_button)
+
     def on_50on_press(self, instance):
         """
         五十音按鈕點擊事件處理
@@ -39,3 +47,8 @@ class MainView(FloatLayout):
         """
         popup = WordsMain()
         popup.open()
+
+    def show_help(self, instance):
+        """顯示幫助文檔"""
+        help_popup = HelpPopup()
+        help_popup.open()

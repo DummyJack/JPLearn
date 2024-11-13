@@ -10,7 +10,8 @@ from .buttons import (
     SongButton,
     MainButton,
     FiftySoundsButton,
-    WordsButton
+    WordsButton,
+    HelpButton
 )
 
 from .labels import (
@@ -49,6 +50,7 @@ __all__ = [
     'MainButton',
     'FiftySoundsButton',
     'WordsButton',
+    'HelpButton',
     
     # labels
     'BaseLabel',

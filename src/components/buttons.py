@@ -207,3 +207,15 @@ class WordsButton(MainButton):
             **kwargs
         )
         self.bind(on_press=callback)
+
+class HelpButton(ButtonWithIcon):
+    """幫助按鈕"""
+    def __init__(self, callback, **kwargs):
+        super().__init__(
+            icon="resources/icons/help_icon.png",
+            size=(dp(40), dp(40)),
+            with_background=False,
+            icon_size_ratio=0.8,
+            **kwargs
+        )
+        self.bind(on_press=callback)
