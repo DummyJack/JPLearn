@@ -2,6 +2,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.widget import Widget
 from kivy.metrics import dp
+from kivy.uix.label import Label
 
 from database import words_collection
 from components import JapaneseTextInput, ExplanationTextInput, ErrorLabel, CancelButton, ConfirmButton
@@ -111,26 +112,78 @@ class WordPopup(Popup):
         if not self.japanese_input.on_text_validate(None, japanese):
             return
 
-        # 確保explanation不為None
-        explanation = explanation if explanation else ""
+        # 創建確認對話框
+        content = BoxLayout(orientation='vertical', spacing=dp(20), padding=dp(20))
         
-        if self.mode == "add":
-            # 新增模式：向數據庫添加新記錄
-            if words_collection is None:
-                self.error_label.text = "資料庫連接失敗"
-                return
+        # 添加確認信息
+        confirm_text = (
+            f"請確認以下內容：\n\n"
+            f"單字：{japanese}\n"
+            f"解釋：{explanation or '(無解釋)'}"
+        )
+        content.add_widget(Label(
+            text=confirm_text,
+            font_name="ChineseFont",
+            halign='left',
+            valign='middle',
+            text_size=(400, None),
+            size_hint_y=None,
+            height=dp(120)
+        ))
 
-            try:
-                # 插入數據並執行回調
-                result = words_collection.insert_one(
-                    {"japanese": japanese, "explanation": explanation}
-                )
+        # 添加按鈕
+        button_layout = BoxLayout(
+            orientation='horizontal',
+            spacing=dp(20),
+            size_hint_y=None,
+            height=dp(40)
+        )
+
+        def on_confirm(instance):
+            confirm_popup.dismiss()
+            self._perform_submit(japanese, explanation)
+
+        confirm_btn = ConfirmButton(
+            text="確定",
+            on_press=on_confirm
+        )
+        cancel_btn = CancelButton(
+            on_press=lambda x: confirm_popup.dismiss()
+        )
+
+        button_layout.add_widget(Widget(size_hint_x=0.4))
+        button_layout.add_widget(confirm_btn)
+        button_layout.add_widget(cancel_btn)
+        button_layout.add_widget(Widget(size_hint_x=0.4))
+        content.add_widget(button_layout)
+
+        # 顯示確認彈窗
+        confirm_popup = Popup(
+            title="確認提交",
+            content=content,
+            size_hint=(0.8, 0.4),
+            auto_dismiss=False
+        )
+        confirm_popup.open()
+
+    def _perform_submit(self, japanese: str, explanation: str):
+        """執行實際的提交操作"""
+        try:
+            if self.mode == "add":
+                if words_collection is None:
+                    self.error_label.text = "資料庫連接失敗"
+                    return
+
+                result = words_collection.insert_one({
+                    "japanese": japanese,
+                    "explanation": explanation
+                })
                 self.callback(japanese, explanation, result.inserted_id)
-                self.dismiss()
-                self.update_view_callback()
-            except Exception as e:
-                self.error_label.text = f"新增失敗: {str(e)}"
-        else:
-            # 編輯模式：更新現有記錄
-            self.callback(japanese, explanation)
+            else:
+                self.callback(japanese, explanation)
+
             self.dismiss()
+            self.update_view_callback()
+            
+        except Exception as e:
+            self.error_label.text = f"{'新增' if self.mode == 'add' else '修改'}失敗: {str(e)}"
