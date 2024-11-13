@@ -6,9 +6,13 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.widget import Widget
 from kivy.metrics import dp
 from math import ceil
+from kivy.uix.label import Label
+from kivy.clock import Clock
 
 from database import words_collection
-from components import ConfirmButton, CancelButton, ConfirmLabel, WordItem
+from components import ConfirmButton, CancelButton, ConfirmLabel, WordItem, LoadingIndicator
+
+TEST_MODE = False  # 開啟測試模式
 
 class WordManager(ScrollView):
     """單字管理器：負責單字的增刪改查和分頁顯示"""
@@ -23,6 +27,16 @@ class WordManager(ScrollView):
         )
         # 綁定最小高度，確保可以正確滾動
         self.layout.bind(minimum_height=self.layout.setter("height"))
+        
+        # 添加載入指示器
+        self.loading = LoadingIndicator(
+            pos_hint={'center_x': .5, 'center_y': .5},
+            size_hint=(None, None),
+            size=(dp(100), dp(30))
+        )
+        self.layout.add_widget(self.loading)
+        
+        # 只添加 layout 作為唯一的子部件
         self.add_widget(self.layout)
 
         # 初始化分頁相關的狀態
@@ -40,57 +54,108 @@ class WordManager(ScrollView):
 
     def search_words(self, search_term):
         """搜索單字：根據輸入的關鍵詞搜索單字"""
-        self.last_search_term = search_term
-        if not search_term:  # 如果搜索詞為空，返回普通顯示模式
-            self.search_mode = False
-            self.load_words_from_db()
-            return
+        try:
+            self.last_search_term = search_term
+            if not search_term:  # 如果搜索詞為空，返回普通顯示模式
+                self.search_mode = False
+                self.load_words_from_db()
+                return
 
-        # 進入搜索模式
-        self.search_mode = True
-        # 使用正則表達式進行模糊搜索
-        self.search_results = list(
-            words_collection.find(
-                {"japanese": {"$regex": search_term, "$options": "i"}}
+            # 進入搜索模式
+            self.search_mode = True
+            # 使用正則表達式進行模糊搜索
+            self.search_results = list(
+                words_collection.find(
+                    {"japanese": {"$regex": search_term, "$options": "i"}}
+                )
             )
-        )
-        # 更新分頁信息
-        self.total_pages = max(1, ceil(len(self.search_results) / self.items_per_page))
-        self.current_page = 1
-        self.update_view()
+            # 更新分頁信息
+            self.total_pages = max(1, ceil(len(self.search_results) / self.items_per_page))
+            self.current_page = 1
+            self.update_view()
+        except Exception as e:
+            print(f"Error searching words: {str(e)}")
 
     def load_words_from_db(self):
         """從數據庫加載單字：根據當前頁碼和搜索狀態加載對應的單字"""
-        if words_collection is None:
-            print("無法連接到數據庫，無法加載單詞")
-            return
-        self.layout.clear_widgets()  # 清空現有單字
+        # 清空當前佈局
+        self.layout.clear_widgets()
+        
+        # 只在非搜索模式下顯示加載動畫
+        if not self.search_mode:
+            self.loading.start()
+            self.layout.add_widget(self.loading)
+            if TEST_MODE:
+                # 測試模式：延遲1秒加載數據
+                Clock.schedule_once(lambda dt: self._load_data(), 3)
+                return
+        
+        # 非測試模式：直接加載數據
+        self._load_data()
 
-        # 根據搜索模式決定數據來源
-        if self.search_mode:
-            # 從搜索結果中獲取當前頁的數據
-            total_words = len(self.search_results)
-            words = self.search_results[
-                (self.current_page - 1) * self.items_per_page : 
-                self.current_page * self.items_per_page
-            ]
-        else:
-            # 從數據庫中獲取當前頁的數據
-            total_words = words_collection.count_documents({})
-            skip = (self.current_page - 1) * self.items_per_page
-            words = list(
-                words_collection.find()
-                .sort([("_id", -1)])  # 按ID降序排序，最新添加的顯示在前面
-                .skip(skip)
-                .limit(self.items_per_page)
+    def _load_data(self):
+        """實際加載數據的方法"""
+        try:
+            if words_collection is None:
+                raise ConnectionError("無法連接到數據庫")
+            
+            # 根據搜索模式決定數據來源
+            if self.search_mode:
+                # 從搜索結果中獲取當前頁的數據
+                total_words = len(self.search_results)
+                words = self.search_results[
+                    (self.current_page - 1) * self.items_per_page : 
+                    self.current_page * self.items_per_page
+                ]
+            else:
+                # 從數據庫中獲取當前頁的數據
+                total_words = words_collection.count_documents({})
+                skip = (self.current_page - 1) * self.items_per_page
+                words = list(
+                    words_collection.find()
+                    .sort([("_id", -1)])  # 按ID降序排序，最新添加的顯示在前面
+                    .skip(skip)
+                    .limit(self.items_per_page)
+                )
+
+            # 更新總頁數
+            self.total_pages = max(1, ceil(total_words / self.items_per_page))
+
+            # 添加單字到界面
+            for word in words:
+                self.add_word(word["japanese"], word["explanation"], word["_id"])
+            
+            # 如果沒有數據，顯示提示信息
+            if not words:
+                no_data_label = Label(
+                    text="暫無數據" if not self.search_mode else "未找到匹配的單字",
+                    font_name="ChineseFont",
+                    font_size='24sp',
+                    bold=True,
+                    color=(0.8, 0.8, 0.8, 1),
+                    size_hint_y=None,
+                    height=dp(60),
+                    halign='center',
+                    valign='middle'
+                )
+                # 添加一個空白 Widget 來推動文字向下
+                self.layout.add_widget(Widget(size_hint_y=None, height=dp(100)))
+                self.layout.add_widget(no_data_label)
+            
+        except Exception as e:
+            # 錯誤處理
+            error_label = Label(
+                text="加載數據時發生錯誤",
+                font_name="ChineseFont",
+                color=(1, 0, 0, 1)  # 紅色文字
             )
-
-        # 更新總頁數
-        self.total_pages = max(1, ceil(total_words / self.items_per_page))
-
-        # 添加單字到界面
-        for word in words:
-            self.add_word(word["japanese"], word["explanation"], word["_id"])
+            self.layout.add_widget(error_label)
+            print(f"Error loading words: {str(e)}")
+            
+        finally:
+            # 只在非搜索模式下停止加載動畫
+            if not self.search_mode:
+                self.loading.stop()
 
     def add_word(self, japanese, explanation, word_id=None):
         """添加單字到界面"""

@@ -33,6 +33,7 @@ from .inputs import (
 from .pagination import Pagination
 from .search_bar import SearchBar
 from .word_item import WordItem
+from .loading_indicator import LoadingIndicator
 
 __all__ = [
     # buttons
@@ -67,5 +68,6 @@ __all__ = [
     # other components
     'Pagination',
     'SearchBar',
-    'WordItem'
+    'WordItem',
+    'LoadingIndicator'
 ] 
