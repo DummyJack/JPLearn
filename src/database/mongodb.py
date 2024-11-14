@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from pymongo import MongoClient
 import logging
-from .validators import WORDS_VALIDATOR
+from .validators import WORDS_VALIDATOR, TESTS_VALIDATOR
 
 # MongoDB 配置常量
 MONGODB_CONFIG = {
@@ -64,6 +64,11 @@ class MongoDBManager:
             logging.info(f"創建 {MONGODB_CONFIG['COLLECTION']} 集合")
             self.db.create_collection(MONGODB_CONFIG["COLLECTION"])
         self.collection = self.db[MONGODB_CONFIG["COLLECTION"]]
+        
+        # 新增 tests 集合
+        if "tests" not in self.db.list_collection_names():
+            logging.info("創建 tests 集合")
+            self.db.create_collection("tests")
     
     def _set_validation_rules(self):
         """設置驗證規則"""
@@ -72,6 +77,13 @@ class MongoDBManager:
             **WORDS_VALIDATOR
         }
         self.db.command(validator_config)
+        
+        # 設置 tests 集合的驗證規則
+        tests_validator_config = {
+            "collMod": "tests",
+            **TESTS_VALIDATOR
+        }
+        self.db.command(tests_validator_config)
     
     def get_collection(self):
         """獲取集合實例"""
