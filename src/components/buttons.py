@@ -144,7 +144,7 @@ class SoundButton(Button):
     """五十音按鈕"""
     def __init__(self, japanese, romaji, size=dp(70), **kwargs):
         super().__init__(
-            text=f"[size=30]{japanese}[/size]\n[size=24]{romaji}[/size]",
+            text=f"{japanese}\n{romaji}",
             markup=True,
             font_name="ChineseFont",
             background_color=(0.5, 0.7, 1, 1),  # 淺藍色背景
