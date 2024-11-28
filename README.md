@@ -26,17 +26,19 @@ python src/scripts/insert_sample_data.py
 pip install -r tests/requirements-dev.txt
 ```
 
-### 執行測試
+## 情境化測試
 
-```bash
-python -m pytest
-``` 
+### 安裝
 
-### 生成覆蓋率報告
+[SikuliX IDE](https://github.com/RaiMan/SikuliX1/releases)
 
-```bash
-python -m pytest --cov=functions --cov-report=term-missing --cov-report=html
-```
+### 執行
+
+注意：Requires Java 17 or greater、only Windows test
+
+Step 1：SikuliX IDE 上，開啟 test_context.sikuli 資料夾
+
+Step 2：按下執行按鈕
 
 ## 來源
 
@@ -44,9 +46,5 @@ python -m pytest --cov=functions --cov-report=term-missing --cov-report=html
 
 1. [學學日文之歌](https://www.youtube.com/watch?v=7I2Ryji_9Js)
 2. [日語五十音](https://riyutool.com/50yinmp3)
-
-### Icons
-
-[Flaticon](https://www.flaticon.com/)
 
 ### 注意：本專案為學習用，程式碼由 Cursor 生成
