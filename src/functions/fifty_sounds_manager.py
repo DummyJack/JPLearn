@@ -80,7 +80,7 @@ class FiftySoundsManager:
     def _reset_button_color(self, button):
         """重置按鈕顏色到默認狀態"""
         if isinstance(button, SongButton):
-            button.background_color = (1, 0.7, 0.7, 1)  # 淺粉紅色 - 歌曲按鈕的默認顏色
+            button.background_color = (1, 0.96, 0.78, 1)  # 淺黃色 - 歌曲按鈕的默認顏色
         else:
             button.background_color = (0.5, 0.7, 1, 1)  # 淺藍色 - 一般按鈕的默認顏色
 

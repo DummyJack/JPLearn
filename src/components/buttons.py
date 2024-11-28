@@ -162,7 +162,7 @@ class SongButton(Button):
         super().__init__(
             text="一首歌記住五十音",
             font_name="ChineseFont",
-            background_color=(1, 0.7, 0.7, 1),  # 淺粉紅色背景
+            background_color=(1, 0.96, 0.78, 1),  # 淺黃色背景
             size_hint=(None, None),
             size=(size * 3, size),
             halign="center",
