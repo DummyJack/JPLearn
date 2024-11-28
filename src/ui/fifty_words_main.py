@@ -97,7 +97,7 @@ class FiftySoundsGrid(BoxLayout):
         btn.bind(on_press=self.sound_manager.play_song)   # 綁定播放事件
         return btn
 
-class FiftySoundsMain(Popup):
+class FiftyWordsMain(Popup):
     """五十音彈出窗口：主要容器"""
     
     def __init__(self, **kwargs):

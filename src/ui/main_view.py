@@ -1,7 +1,7 @@
 from kivy.uix.floatlayout import FloatLayout
 
 from ui.words_main import WordsMain
-from ui.fifty_sounds_main import FiftySoundsMain
+from ui.fifty_words_main import FiftyWordsMain
 from components import FiftySoundsButton, WordsButton, TitleLabel, CreatorLabel, HelpButton
 from ui.help_popup import HelpPopup
 
@@ -37,7 +37,7 @@ class MainView(FloatLayout):
         五十音按鈕點擊事件處理
         打開五十音學習界面（彈出窗口形式）
         """
-        popup = FiftySoundsMain()
+        popup = FiftyWordsMain()
         popup.open()
 
     def on_words_press(self, instance):
