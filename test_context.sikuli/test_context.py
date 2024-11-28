@@ -6,7 +6,8 @@ class ContextTest(unittest.TestCase):
     pattern_correct = Pattern("correct_btn.png").similar(0.94)
 
     def setUp(self):
-        click("fifty_words_btn.png") # 開啟五十音介面
+        click("main_view.png")
+        click(Pattern("fifty_words_btn.png").similar(0.94)) # 開啟五十音介面
         wait(Pattern("fifty_view.png").similar(0.93))
     
     def test_fifity_words(self):
@@ -19,18 +20,18 @@ class ContextTest(unittest.TestCase):
         except Exception as e:
             print(e)
     
-    # def test_song(self):
-    #     try:
-    #         click(self.pattern_song)
-    #         assert exists(self.pattern_correct) # 檢查歌曲按鈕顏色是否有變化
-    #         wait(2)
-    #         click(self.pattern_song)
-    #         assert not exists(self.pattern_correct) # 檢查回復歌曲按鈕原來顏色
-    #         click(self.pattern_song)
-    #         wait(2)
-    #         type(Key.ESC)
-    #     except Exception as e:
-    #         print(e)
+    def test_song(self):
+        try:
+            click(self.pattern_song)
+            assert exists(self.pattern_correct) # 檢查歌曲按鈕顏色是否有變化
+            wait(2)
+            click(self.pattern_song)
+            assert not exists(self.pattern_correct) # 檢查回復歌曲按鈕原來顏色
+            click(self.pattern_song)
+            wait(2)
+            type(Key.ESC)
+        except Exception as e:
+            print(e)
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(ContextTest)
